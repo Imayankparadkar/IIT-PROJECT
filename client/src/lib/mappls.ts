@@ -50,13 +50,18 @@ export class MapplsService {
     }
   }
 
-  // Get directions between two points
+  // Get directions between two points using Rest API
   async getDirections(origin: Location, destination: Location) {
     try {
-      const response = await fetch(`https://apis.mappls.com/advancedmaps/v1/${this.apiKey}/route_adv/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full`);
+      const response = await fetch(`https://apis.mappls.com/advancedmaps/v1/${this.apiKey}/route_adv/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      });
       
       if (!response.ok) {
-        throw new Error('Failed to get directions');
+        throw new Error(`Failed to get directions: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -274,30 +279,39 @@ export class MapplsService {
       // Create callback function
       const callbackName = 'mapplsCallback_' + Date.now();
       (window as any)[callbackName] = () => {
+        console.log('Mappls SDK loaded successfully');
         // Clean up callback
         delete (window as any)[callbackName];
         resolve();
       };
 
       const script = document.createElement('script');
+      // Using Rest/Map SDK key credential type
       script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?layer=vector&v=3.0&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       
-      script.onerror = () => {
+      script.onload = () => {
+        console.log('Mappls script loaded');
+      };
+      
+      script.onerror = (error) => {
+        console.error('Script loading error:', error);
         delete (window as any)[callbackName];
         reject(new Error('Failed to load Mappls SDK'));
       };
 
-      // Timeout after 10 seconds
+      // Timeout after 15 seconds
       setTimeout(() => {
         if ((window as any)[callbackName]) {
+          console.error('Mappls SDK loading timeout');
           delete (window as any)[callbackName];
           reject(new Error('Mappls SDK loading timeout'));
         }
-      }, 10000);
+      }, 15000);
 
       document.head.appendChild(script);
+      console.log('Mappls SDK script added to head');
     });
   }
 
@@ -306,22 +320,34 @@ export class MapplsService {
     return `https://maps.mappls.com/directions?destination=${destination.lat},${destination.lng}`;
   }
 
-  // Simple map initialization for testing
+  // Simple map initialization for testing using Rest/Map SDK key
   async initializeBasicMap(containerId: string, center: Location) {
     try {
+      console.log('Initializing basic map with Rest/Map SDK key...');
       await this.loadMapplsSDK();
       
+      console.log('Creating map instance...');
       const map = new (window as any).mappls.Map(containerId, {
         center: [center.lng, center.lat],
         zoom: 15,
         style: 'mappls://styles/mappls/streets-v1'
       });
 
+      // Wait for map to be ready
+      await new Promise((resolve) => {
+        map.on('load', () => {
+          console.log('Map loaded successfully');
+          resolve(true);
+        });
+      });
+
       // Add a simple marker
+      console.log('Adding marker to map...');
       new (window as any).mappls.Marker({
         color: '#ef4444'
       }).setLngLat([center.lng, center.lat]).addTo(map);
 
+      console.log('Basic map initialization complete');
       return map;
     } catch (error) {
       console.error('Error initializing basic map:', error);
