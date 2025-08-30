@@ -39,8 +39,7 @@ export class MapplsService {
       
       const map = new (window as any).mappls.Map(containerId, {
         center: [center.lng, center.lat],
-        zoom: 15,
-        style: 'mappls://styles/mappls/streets-v1'
+        zoom: 15
       });
 
       return map;
@@ -84,8 +83,7 @@ export class MapplsService {
       
       const map = new (window as any).mappls.Map(containerId, {
         center: [centerLng, centerLat],
-        zoom: 12,
-        style: 'mappls://styles/mappls/streets-v1'
+        zoom: 12
       });
 
       // Wait for map to load
@@ -272,52 +270,57 @@ export class MapplsService {
   private async loadMapplsSDK(): Promise<void> {
     return new Promise((resolve, reject) => {
       if ((window as any).mappls) {
+        console.log('Mappls SDK already loaded');
         resolve();
         return;
       }
 
+      console.log('Loading Mappls SDK...');
+      
       // Create callback function
       const callbackName = 'mapplsCallback_' + Date.now();
       (window as any)[callbackName] = () => {
-        console.log('Mappls SDK loaded successfully');
+        console.log('Mappls SDK callback executed successfully');
         // Clean up callback
         delete (window as any)[callbackName];
         resolve();
       };
 
       const script = document.createElement('script');
-      // Using Rest/Map SDK key credential type
-      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?layer=vector&v=3.0&callback=${callbackName}`;
+      // Updated SDK URL format for new auth mechanism (Aug 2025)
+      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       
       script.onload = () => {
-        console.log('Mappls script loaded');
+        console.log('Mappls script loaded from server');
       };
       
       script.onerror = (error) => {
         console.error('Script loading error:', error);
+        console.error('Failed URL:', script.src);
         delete (window as any)[callbackName];
-        reject(new Error('Failed to load Mappls SDK'));
+        reject(new Error(`Failed to load Mappls SDK from: ${script.src}`));
       };
 
-      // Timeout after 15 seconds
+      // Timeout after 20 seconds
       setTimeout(() => {
         if ((window as any)[callbackName]) {
-          console.error('Mappls SDK loading timeout');
+          console.error('Mappls SDK loading timeout after 20 seconds');
+          console.error('Script URL was:', script.src);
           delete (window as any)[callbackName];
           reject(new Error('Mappls SDK loading timeout'));
         }
-      }, 15000);
+      }, 20000);
 
       document.head.appendChild(script);
-      console.log('Mappls SDK script added to head');
+      console.log('Mappls SDK script added to head with URL:', script.src);
     });
   }
 
   // Create simple directions URL for external navigation
   getDirectionsUrl(destination: Location): string {
-    return `https://maps.mappls.com/directions?destination=${destination.lat},${destination.lng}`;
+    return `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
   }
 
   // Simple map initialization for testing using Rest/Map SDK key
@@ -329,8 +332,7 @@ export class MapplsService {
       console.log('Creating map instance...');
       const map = new (window as any).mappls.Map(containerId, {
         center: [center.lng, center.lat],
-        zoom: 15,
-        style: 'mappls://styles/mappls/streets-v1'
+        zoom: 15
       });
 
       // Wait for map to be ready
