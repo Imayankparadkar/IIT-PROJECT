@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { mapplsService } from '@/lib/mappls';
 import AuthModal from './AuthModal';
 import VehicleDetails from './VehicleDetails';
+import RealTimeParkingBooking from './RealTimeParkingBooking';
 
 export default function ServicesSection() {
   const { user } = useAuth();
@@ -159,46 +160,30 @@ export default function ServicesSection() {
               </CardContent>
             </Card>
             
-            {/* On-Time Booking */}
-            <Card className="card-hover">
+            {/* On-Time Booking with Real-Time Updates */}
+            <Card className="card-hover md:col-span-2 lg:col-span-3">
               <CardContent className="p-6">
-                <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mb-4">
-                  <i className="fas fa-bolt text-green-600 text-xl"></i>
-                </div>
-                <h3 className="text-xl font-semibold mb-3">On-Time Booking</h3>
-                <p className="text-gray-600 mb-4">Real-time booking for immediate parking needs</p>
-                
-                <div className="space-y-2 mb-4">
-                  <div className="flex justify-between items-center p-2 bg-green-50 rounded" data-testid="spot-c21">
-                    <span className="text-sm">C21 Mall</span>
-                    <span className="text-green-600 font-semibold">12 slots</span>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                    <i className="fas fa-bolt text-green-600 text-xl"></i>
                   </div>
-                  <div className="flex justify-between items-center p-2 bg-yellow-50 rounded" data-testid="spot-treasure">
-                    <span className="text-sm">Treasure Island</span>
-                    <span className="text-yellow-600 font-semibold">3 slots</span>
+                  <div>
+                    <h3 className="text-xl font-semibold">Real-Time Parking Booking</h3>
+                    <p className="text-gray-600">Live slot availability with instant booking and navigation</p>
                   </div>
-                  <div className="flex justify-between items-center p-2 bg-red-50 rounded" data-testid="spot-orbit">
-                    <span className="text-sm">Orbit Mall</span>
-                    <span className="text-red-600 font-semibold">Full</span>
+                  <div className="ml-auto flex items-center gap-2">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                    <span className="text-sm text-gray-600">Live Updates</span>
                   </div>
                 </div>
                 
-                <div className="space-y-2">
-                  <Button 
-                    onClick={handleQuickBooking}
-                    className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
-                    data-testid="button-find-nearest"
-                  >
-                    Find Nearest Spot
-                  </Button>
-                  <Button 
-                    onClick={() => setShowVehicleDetailsModal(true)}
-                    variant="outline"
-                    className="w-full py-2 rounded-lg"
-                    data-testid="button-check-vehicle-details"
-                  >
-                    Check Vehicle Details
-                  </Button>
+                <RealTimeParkingBooking />
+                
+                <div className="mt-4 p-3 bg-blue-50 rounded-lg">
+                  <div className="flex items-center gap-2 text-blue-700">
+                    <i className="fas fa-gift"></i>
+                    <span className="text-sm font-medium">Earn 30 points for each real-time booking!</span>
+                  </div>
                 </div>
               </CardContent>
             </Card>
