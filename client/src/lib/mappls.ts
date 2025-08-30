@@ -83,13 +83,18 @@ export class MapplsService {
         style: 'mappls://styles/mappls/streets-v1'
       });
 
+      // Wait for map to load
+      await new Promise((resolve) => {
+        map.on('load', resolve);
+      });
+
       // Add markers for origin and destination
       const originMarker = new (window as any).mappls.Marker({
-        color: 'green'
+        color: '#22c55e'
       }).setLngLat([origin.lng, origin.lat]).addTo(map);
 
       const destinationMarker = new (window as any).mappls.Marker({
-        color: 'red'
+        color: '#ef4444'
       }).setLngLat([destination.lng, destination.lat]).addTo(map);
 
       // Get and display route
@@ -117,25 +122,27 @@ export class MapplsService {
               'line-cap': 'round'
             },
             'paint': {
-              'line-color': '#3887be',
-              'line-width': 5,
-              'line-opacity': 0.75
+              'line-color': '#3b82f6',
+              'line-width': 6,
+              'line-opacity': 0.8
             }
           });
 
-          // Fit map to route bounds
+          // Fit map to show entire route
           const coordinates = route.geometry.coordinates;
-          const bounds = new (window as any).mappls.LngLatBounds();
-          coordinates.forEach((coord: number[]) => bounds.extend(coord));
-          map.fitBounds(bounds, { padding: 50 });
+          if (coordinates && coordinates.length > 0) {
+            const bounds = new (window as any).mappls.LngLatBounds();
+            coordinates.forEach((coord: number[]) => bounds.extend(coord));
+            map.fitBounds(bounds, { padding: 80 });
+          }
         }
       } catch (routeError) {
         console.error('Error getting route:', routeError);
-        // Still show markers even if route fails
+        // Still show markers and fit to bounds even if route fails
         const bounds = new (window as any).mappls.LngLatBounds();
         bounds.extend([origin.lng, origin.lat]);
         bounds.extend([destination.lng, destination.lat]);
-        map.fitBounds(bounds, { padding: 50 });
+        map.fitBounds(bounds, { padding: 80 });
       }
 
       return map;
@@ -264,18 +271,31 @@ export class MapplsService {
         return;
       }
 
-      const script = document.createElement('script');
-      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?layer=vector&v=3.0&callback=initMappls`;
-      script.async = true;
-      script.defer = true;
-      
-      (window as any).initMappls = () => {
+      // Create callback function
+      const callbackName = 'mapplsCallback_' + Date.now();
+      (window as any)[callbackName] = () => {
+        // Clean up callback
+        delete (window as any)[callbackName];
         resolve();
       };
 
+      const script = document.createElement('script');
+      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?layer=vector&v=3.0&callback=${callbackName}`;
+      script.async = true;
+      script.defer = true;
+      
       script.onerror = () => {
+        delete (window as any)[callbackName];
         reject(new Error('Failed to load Mappls SDK'));
       };
+
+      // Timeout after 10 seconds
+      setTimeout(() => {
+        if ((window as any)[callbackName]) {
+          delete (window as any)[callbackName];
+          reject(new Error('Mappls SDK loading timeout'));
+        }
+      }, 10000);
 
       document.head.appendChild(script);
     });
@@ -284,6 +304,29 @@ export class MapplsService {
   // Create simple directions URL for external navigation
   getDirectionsUrl(destination: Location): string {
     return `https://maps.mappls.com/directions?destination=${destination.lat},${destination.lng}`;
+  }
+
+  // Simple map initialization for testing
+  async initializeBasicMap(containerId: string, center: Location) {
+    try {
+      await this.loadMapplsSDK();
+      
+      const map = new (window as any).mappls.Map(containerId, {
+        center: [center.lng, center.lat],
+        zoom: 15,
+        style: 'mappls://styles/mappls/streets-v1'
+      });
+
+      // Add a simple marker
+      new (window as any).mappls.Marker({
+        color: '#ef4444'
+      }).setLngLat([center.lng, center.lat]).addTo(map);
+
+      return map;
+    } catch (error) {
+      console.error('Error initializing basic map:', error);
+      throw error;
+    }
   }
 }
 

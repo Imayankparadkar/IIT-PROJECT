@@ -63,6 +63,10 @@ export default function MapDirections({
       const userLoc = await mapplsService.getCurrentLocation();
       setUserLocation(userLoc);
 
+      console.log('User location:', userLoc);
+      console.log('Destination:', destination);
+      console.log('Map container ID:', mapContainer.current.id);
+
       // Initialize map with route
       const mapInstance = await mapplsService.initializeMapWithRoute(
         mapContainer.current.id,
@@ -71,10 +75,13 @@ export default function MapDirections({
       );
 
       setMap(mapInstance);
+      console.log('Map initialized successfully');
 
       // Calculate route information
       try {
         const routeData = await mapplsService.getDirections(userLoc, destination);
+        console.log('Route data:', routeData);
+        
         if (routeData.routes && routeData.routes.length > 0) {
           const route = routeData.routes[0];
           setRouteInfo({
@@ -84,10 +91,26 @@ export default function MapDirections({
         }
       } catch (routeError) {
         console.error('Could not get route info:', routeError);
+        // Try to show basic info
+        setRouteInfo({
+          distance: 'Calculating...',
+          duration: 'Calculating...'
+        });
       }
 
     } catch (error) {
       console.error('Error initializing map:', error);
+      // Try fallback: simple map with destination marker
+      try {
+        const fallbackMap = await mapplsService.initializeBasicMap(
+          mapContainer.current.id,
+          destination
+        );
+        setMap(fallbackMap);
+        console.log('Fallback map initialized');
+      } catch (fallbackError) {
+        console.error('Fallback map also failed:', fallbackError);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -144,9 +167,9 @@ export default function MapDirections({
           <div className="relative">
             <div 
               ref={mapContainer}
-              id={`map-${Date.now()}`}
-              className="w-full h-96 rounded-lg bg-gray-100"
-              style={{ minHeight: '400px' }}
+              id={`mappls-map-${Date.now()}`}
+              className="w-full h-96 rounded-lg bg-gray-100 border"
+              style={{ minHeight: '400px', width: '100%' }}
             />
             
             {isLoading && (
