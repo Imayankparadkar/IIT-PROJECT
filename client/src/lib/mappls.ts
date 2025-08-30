@@ -1,4 +1,4 @@
-const MAPPLS_API_KEY = "b963a6654470c7b9e0683f0a979ffa16";
+const MAPPLS_API_KEY = "cc616d4dd3986c77dbbb4b4abb266036";
 
 export interface Location {
   lat: number;
