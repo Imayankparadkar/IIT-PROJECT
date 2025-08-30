@@ -1,4 +1,5 @@
-const MAPPLS_API_KEY = "cc616d4dd3986c77dbbb4b4abb266036";
+// Use environment variable if available, fallback to provided key
+const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY || "cc616d4dd3986c77dbbb4b4abb266036";
 
 export interface Location {
   lat: number;
@@ -287,8 +288,8 @@ export class MapplsService {
       };
 
       const script = document.createElement('script');
-      // Updated SDK URL format for new auth mechanism (Aug 2025)
-      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&callback=${callbackName}`;
+      // Updated SDK URL format for new auth mechanism (Aug 2025) - access_token param
+      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&access_token=${this.apiKey}&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       

@@ -2,11 +2,31 @@ import admin from 'firebase-admin';
 
 // Initialize Firebase Admin only if not already initialized
 if (!admin.apps.length) {
-  // For development, we'll use the client config since we don't have admin credentials
-  // In production, you would use proper service account credentials
-  admin.initializeApp({
-    projectId: process.env.VITE_FIREBASE_PROJECT_ID || "iit-indore-22e05",
-  });
+  try {
+    // Use proper service account credentials from environment
+    const serviceAccount = process.env.FIREBASE_ADMIN_SERVICE_ACCOUNT;
+    
+    if (serviceAccount) {
+      const serviceAccountKey = JSON.parse(serviceAccount);
+      admin.initializeApp({
+        credential: admin.credential.cert(serviceAccountKey),
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID || "iit-indore-22e05",
+      });
+      console.log('Firebase Admin initialized with service account');
+    } else {
+      // Fallback: initialize without credentials for development
+      admin.initializeApp({
+        projectId: process.env.VITE_FIREBASE_PROJECT_ID || "iit-indore-22e05",
+      });
+      console.log('Firebase Admin initialized without credentials (development mode)');
+    }
+  } catch (error) {
+    console.error('Failed to initialize Firebase Admin:', error);
+    // Initialize without credentials as fallback
+    admin.initializeApp({
+      projectId: process.env.VITE_FIREBASE_PROJECT_ID || "iit-indore-22e05",
+    });
+  }
 }
 
 export const adminAuth = admin.auth();

@@ -3,6 +3,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { mapplsService, Location } from '@/lib/mappls';
+import { simpleMappls } from '@/lib/mappls-simple';
 import { 
   Navigation, 
   MapPin, 
@@ -60,56 +61,44 @@ export default function MapDirections({
 
     try {
       // Get user's current location
-      const userLoc = await mapplsService.getCurrentLocation();
+      const userLoc = await simpleMappls.getCurrentLocation();
       setUserLocation(userLoc);
 
       console.log('User location:', userLoc);
       console.log('Destination:', destination);
       console.log('Map container ID:', mapContainer.current.id);
 
-      // Initialize map with route
-      const mapInstance = await mapplsService.initializeMapWithRoute(
+      // Use simple iframe approach for reliable map display
+      const iframe = simpleMappls.createEmbeddedMap(
         mapContainer.current.id,
-        userLoc,
-        destination
+        destination,
+        userLoc
       );
+      
+      setMap(iframe);
+      console.log('Simple map initialized successfully');
 
-      setMap(mapInstance);
-      console.log('Map initialized successfully');
-
-      // Calculate route information
-      try {
-        const routeData = await mapplsService.getDirections(userLoc, destination);
-        console.log('Route data:', routeData);
-        
-        if (routeData.routes && routeData.routes.length > 0) {
-          const route = routeData.routes[0];
-          setRouteInfo({
-            distance: `${(route.distance / 1000).toFixed(1)} km`,
-            duration: `${Math.round(route.duration / 60)} min`
-          });
-        }
-      } catch (routeError) {
-        console.error('Could not get route info:', routeError);
-        // Try to show basic info
-        setRouteInfo({
-          distance: 'Calculating...',
-          duration: 'Calculating...'
-        });
-      }
+      // Calculate basic route information
+      const routeCalc = simpleMappls.calculateDistance(userLoc, destination);
+      setRouteInfo(routeCalc);
 
     } catch (error) {
-      console.error('Error initializing map:', error);
-      // Try fallback: simple map with destination marker
-      try {
-        const fallbackMap = await mapplsService.initializeBasicMap(
-          mapContainer.current.id,
-          destination
-        );
-        setMap(fallbackMap);
-        console.log('Fallback map initialized');
-      } catch (fallbackError) {
-        console.error('Fallback map also failed:', fallbackError);
+      console.error('Error initializing simple map:', error);
+      // Create fallback static map
+      if (mapContainer.current) {
+        mapContainer.current.innerHTML = `
+          <div class="w-full h-full bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center">
+            <div class="text-center p-6">
+              <div class="text-blue-600 mb-2">📍</div>
+              <p class="text-blue-800 font-medium">${destinationName}</p>
+              <p class="text-blue-600 text-sm">${destination.address || 'View location in external app'}</p>
+            </div>
+          </div>
+        `;
+        setRouteInfo({
+          distance: 'Click external links',
+          duration: 'for navigation'
+        });
       }
     } finally {
       setIsLoading(false);
@@ -117,12 +106,12 @@ export default function MapDirections({
   };
 
   const openInMappls = () => {
-    const mapplsUrl = mapplsService.getDirectionsUrl(destination);
+    const mapplsUrl = simpleMappls.getDirectionsUrl(destination);
     window.open(mapplsUrl, '_blank');
   };
 
   const openInGoogleMaps = () => {
-    const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+    const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination);
     window.open(googleMapsUrl, '_blank');
   };
 
