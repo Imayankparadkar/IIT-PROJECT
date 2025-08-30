@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
 import { mapplsService, ParkingLocation } from '@/lib/mappls';
+import MapDirections from './MapDirections';
 import { 
   Search, 
   MapPin, 
@@ -50,6 +51,7 @@ export default function RealTimeParkingBooking() {
   const [selectedSlot, setSelectedSlot] = useState<ParkingSlot | null>(null);
   const [showSlotModal, setShowSlotModal] = useState(false);
   const [showNavigationModal, setShowNavigationModal] = useState(false);
+  const [showMapDirections, setShowMapDirections] = useState(false);
   const [leavingMessage, setLeavingMessage] = useState('');
   const [isBooking, setIsBooking] = useState(false);
   
@@ -242,26 +244,7 @@ export default function RealTimeParkingBooking() {
 
   const handleGetDirections = async () => {
     if (!selectedMall) return;
-
-    try {
-      const userLocation = await mapplsService.getCurrentLocation();
-      const directions = await mapplsService.getDirections(userLocation, selectedMall);
-      
-      toast({
-        title: "Navigation Started",
-        description: `Directions to ${selectedMall.name} sent to your device`,
-      });
-
-      // Open in Maps app or browser
-      const mapsUrl = `https://maps.google.com/maps?daddr=${selectedMall.lat},${selectedMall.lng}`;
-      window.open(mapsUrl, '_blank');
-    } catch (error) {
-      toast({
-        title: "Navigation Error",
-        description: "Unable to get directions. Please try again.",
-        variant: "destructive",
-      });
-    }
+    setShowMapDirections(true);
   };
 
   const handleSendLeavingMessage = () => {
@@ -385,7 +368,7 @@ export default function RealTimeParkingBooking() {
                   variant="outline"
                   onClick={() => {
                     setSelectedMall(mall);
-                    handleGetDirections();
+                    setShowMapDirections(true);
                   }}
                   className="w-full"
                 >
@@ -588,6 +571,25 @@ export default function RealTimeParkingBooking() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Map Directions Modal */}
+      {selectedMall && (
+        <MapDirections
+          isOpen={showMapDirections}
+          onClose={() => setShowMapDirections(false)}
+          destination={{
+            lat: selectedMall.lat,
+            lng: selectedMall.lng,
+            address: selectedMall.address
+          }}
+          destinationName={selectedMall.name}
+          slotInfo={selectedSlot ? {
+            level: selectedSlot.level,
+            section: selectedSlot.section,
+            number: selectedSlot.number
+          } : undefined}
+        />
+      )}
     </div>
   );
 }

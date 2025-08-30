@@ -67,6 +67,84 @@ export class MapplsService {
     }
   }
 
+  // Initialize map with route between two points
+  async initializeMapWithRoute(containerId: string, origin: Location, destination: Location) {
+    try {
+      // Load Mappls SDK
+      await this.loadMapplsSDK();
+      
+      // Create map centered between origin and destination
+      const centerLat = (origin.lat + destination.lat) / 2;
+      const centerLng = (origin.lng + destination.lng) / 2;
+      
+      const map = new (window as any).mappls.Map(containerId, {
+        center: [centerLng, centerLat],
+        zoom: 12,
+        style: 'mappls://styles/mappls/streets-v1'
+      });
+
+      // Add markers for origin and destination
+      const originMarker = new (window as any).mappls.Marker({
+        color: 'green'
+      }).setLngLat([origin.lng, origin.lat]).addTo(map);
+
+      const destinationMarker = new (window as any).mappls.Marker({
+        color: 'red'
+      }).setLngLat([destination.lng, destination.lat]).addTo(map);
+
+      // Get and display route
+      try {
+        const routeData = await this.getDirections(origin, destination);
+        if (routeData.routes && routeData.routes.length > 0) {
+          const route = routeData.routes[0];
+          
+          // Add route to map
+          map.addSource('route', {
+            'type': 'geojson',
+            'data': {
+              'type': 'Feature',
+              'properties': {},
+              'geometry': route.geometry
+            }
+          });
+
+          map.addLayer({
+            'id': 'route',
+            'type': 'line',
+            'source': 'route',
+            'layout': {
+              'line-join': 'round',
+              'line-cap': 'round'
+            },
+            'paint': {
+              'line-color': '#3887be',
+              'line-width': 5,
+              'line-opacity': 0.75
+            }
+          });
+
+          // Fit map to route bounds
+          const coordinates = route.geometry.coordinates;
+          const bounds = new (window as any).mappls.LngLatBounds();
+          coordinates.forEach((coord: number[]) => bounds.extend(coord));
+          map.fitBounds(bounds, { padding: 50 });
+        }
+      } catch (routeError) {
+        console.error('Error getting route:', routeError);
+        // Still show markers even if route fails
+        const bounds = new (window as any).mappls.LngLatBounds();
+        bounds.extend([origin.lng, origin.lat]);
+        bounds.extend([destination.lng, destination.lat]);
+        map.fitBounds(bounds, { padding: 50 });
+      }
+
+      return map;
+    } catch (error) {
+      console.error('Error initializing map with route:', error);
+      throw error;
+    }
+  }
+
   // Find nearby parking spots
   async findNearbyParking(location: Location, radius: number = 5000): Promise<ParkingLocation[]> {
     // Mock data for demo - in production, this would call Mappls Places API
@@ -201,6 +279,11 @@ export class MapplsService {
 
       document.head.appendChild(script);
     });
+  }
+
+  // Create simple directions URL for external navigation
+  getDirectionsUrl(destination: Location): string {
+    return `https://maps.mappls.com/directions?destination=${destination.lat},${destination.lng}`;
   }
 }
 
