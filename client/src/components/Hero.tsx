@@ -1,16 +1,19 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import AuthModal from '@/components/AuthModal';
 import BookingModal from '@/components/BookingModal';
+import VehicleDetails from '@/components/VehicleDetails';
 
 export default function Hero() {
   const { user } = useAuth();
   const { toast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
   const [showBookingModal, setShowBookingModal] = useState(false);
+  const [showVehicleDetailsModal, setShowVehicleDetailsModal] = useState(false);
   const [challanVehicle, setChallanVehicle] = useState('');
   const [vehicleNumberFetch, setVehicleNumberFetch] = useState('');
 
@@ -24,16 +27,8 @@ export default function Hero() {
       return;
     }
 
-    // Mock challan check
-    const mockChallans = [
-      { amount: 500, reason: "Over speeding", date: "2024-01-15", location: "MG Road, Indore" },
-      { amount: 300, reason: "No parking", date: "2024-01-10", location: "AB Road, Indore" }
-    ];
-
-    toast({
-      title: "Challan Found",
-      description: `Found ${mockChallans.length} pending challans worth ₹${mockChallans.reduce((sum, c) => sum + c.amount, 0)}`,
-    });
+    // Open detailed vehicle lookup modal
+    setShowVehicleDetailsModal(true);
   };
 
   const handleVehicleDetails = async () => {
@@ -46,11 +41,8 @@ export default function Hero() {
       return;
     }
 
-    // Mock vehicle details fetch
-    toast({
-      title: "Vehicle Details",
-      description: `Owner: Rahul Sharma, Location: C21 Mall Parking, Status: Active`,
-    });
+    // Open detailed vehicle lookup modal
+    setShowVehicleDetailsModal(true);
   };
 
   const handleGetStarted = () => {
@@ -121,7 +113,7 @@ export default function Hero() {
                     className="w-full bg-yellow-400 text-gray-900 py-2 rounded-lg font-medium hover:bg-yellow-300 transition-colors"
                     data-testid="button-check-challan"
                   >
-                    Check Challan
+                    Get Details & Location
                   </Button>
                 </div>
               </div>
@@ -164,6 +156,23 @@ export default function Hero() {
         isOpen={showBookingModal}
         onClose={() => setShowBookingModal(false)}
       />
+
+      <Dialog open={showVehicleDetailsModal} onOpenChange={setShowVehicleDetailsModal}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Vehicle Details & Challan Information</DialogTitle>
+          </DialogHeader>
+          <VehicleDetails 
+            showInModal={true}
+            onDataFetched={(data) => {
+              toast({
+                title: "Vehicle Information Retrieved",
+                description: `Found details for ${data.ownerName}'s ${data.vehicleNumber}`,
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -3,17 +3,20 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
 import { mapplsService } from '@/lib/mappls';
 import AuthModal from './AuthModal';
+import VehicleDetails from './VehicleDetails';
 
 export default function ServicesSection() {
   const { user } = useAuth();
   const { addPoints } = useWallet();
   const { toast } = useToast();
   const [showAuthModal, setShowAuthModal] = useState(false);
+  const [showVehicleDetailsModal, setShowVehicleDetailsModal] = useState(false);
   const [bookingForm, setBookingForm] = useState({
     name: '',
     vehicleNumber: '',
@@ -180,13 +183,23 @@ export default function ServicesSection() {
                   </div>
                 </div>
                 
-                <Button 
-                  onClick={handleQuickBooking}
-                  className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
-                  data-testid="button-find-nearest"
-                >
-                  Find Nearest Spot
-                </Button>
+                <div className="space-y-2">
+                  <Button 
+                    onClick={handleQuickBooking}
+                    className="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors"
+                    data-testid="button-find-nearest"
+                  >
+                    Find Nearest Spot
+                  </Button>
+                  <Button 
+                    onClick={() => setShowVehicleDetailsModal(true)}
+                    variant="outline"
+                    className="w-full py-2 rounded-lg"
+                    data-testid="button-check-vehicle-details"
+                  >
+                    Check Vehicle Details
+                  </Button>
+                </div>
               </CardContent>
             </Card>
             
@@ -304,6 +317,23 @@ export default function ServicesSection() {
         onClose={() => setShowAuthModal(false)}
         mode="login"
       />
+
+      <Dialog open={showVehicleDetailsModal} onOpenChange={setShowVehicleDetailsModal}>
+        <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Vehicle Details & Information Lookup</DialogTitle>
+          </DialogHeader>
+          <VehicleDetails 
+            showInModal={true}
+            onDataFetched={(data) => {
+              toast({
+                title: "Vehicle Details Found",
+                description: `${data.ownerName}'s ${data.model} - ${data.pendingChallans.length} challan(s) pending`,
+              });
+            }}
+          />
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

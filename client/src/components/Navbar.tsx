@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
@@ -51,6 +52,12 @@ export default function Navbar() {
               >
                 Products
               </button>
+              <Link href="/vehicle-details">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-vehicle-details">
+                  Vehicle Details
+                </span>
+              </Link>
               <button 
                 onClick={() => scrollToSection('business')}
                 className="text-muted-foreground hover:text-primary transition-colors"
