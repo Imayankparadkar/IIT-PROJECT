@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app";
-import { getAuth, signInWithPhoneNumber, RecaptchaVerifier, ApplicationVerifier } from "firebase/auth";
+import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut, onAuthStateChanged, User as FirebaseUser } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
@@ -19,31 +19,43 @@ export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
 
-let recaptchaVerifier: RecaptchaVerifier | null = null;
-
-export const setupRecaptcha = (containerId: string): RecaptchaVerifier => {
-  if (recaptchaVerifier) {
-    recaptchaVerifier.clear();
-  }
-  
-  recaptchaVerifier = new RecaptchaVerifier(auth, containerId, {
-    size: 'invisible',
-    callback: () => {
-      console.log('Recaptcha resolved');
-    }
-  });
-  
-  return recaptchaVerifier;
-};
-
-export const sendOTP = async (phoneNumber: string, appVerifier: ApplicationVerifier) => {
+// Email/Password Authentication Functions
+export const registerWithEmail = async (email: string, password: string) => {
   try {
-    const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier);
-    return confirmationResult;
+    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
   } catch (error) {
-    console.error('Error sending OTP:', error);
+    console.error('Error creating user:', error);
     throw error;
   }
+};
+
+export const loginWithEmail = async (email: string, password: string) => {
+  try {
+    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+    return userCredential.user;
+  } catch (error) {
+    console.error('Error signing in:', error);
+    throw error;
+  }
+};
+
+export const logoutUser = async () => {
+  try {
+    await signOut(auth);
+  } catch (error) {
+    console.error('Error signing out:', error);
+    throw error;
+  }
+};
+
+export const onAuthChange = (callback: (user: FirebaseUser | null) => void) => {
+  return onAuthStateChanged(auth, callback);
+};
+
+// Get current user
+export const getCurrentUser = () => {
+  return auth.currentUser;
 };
 
 export default app;

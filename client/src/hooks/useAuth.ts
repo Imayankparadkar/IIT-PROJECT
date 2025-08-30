@@ -1,17 +1,17 @@
 import { useState, useEffect } from 'react';
-import { auth, setupRecaptcha, sendOTP } from '@/lib/firebase';
-import { onAuthStateChanged, User } from 'firebase/auth';
+import { auth, registerWithEmail, loginWithEmail, logoutUser, onAuthChange } from '@/lib/firebase';
+import { User } from 'firebase/auth';
 import { useToast } from '@/hooks/use-toast';
 import { apiRequest } from '@/lib/queryClient';
 
 export const useAuth = () => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [isPhoneAuthLoading, setIsPhoneAuthLoading] = useState(false);
+  const [isAuthLoading, setIsAuthLoading] = useState(false);
   const { toast } = useToast();
 
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+    const unsubscribe = onAuthChange(async (user) => {
       setUser(user);
       
       // If user is authenticated, ensure they exist in our database
@@ -20,17 +20,10 @@ export const useAuth = () => {
           const response = await fetch(`/api/users/${user.uid}`);
           if (!response.ok && response.status === 404) {
             // User doesn't exist in our database, create them
-            await apiRequest('/api/users', {
-              method: 'POST',
-              body: JSON.stringify({
-                id: user.uid,
-                phoneNumber: user.phoneNumber || '',
-                name: user.displayName || null,
-                email: user.email || null
-              }),
-              headers: {
-                'Content-Type': 'application/json'
-              }
+            await apiRequest('POST', '/api/users', {
+              firebaseUid: user.uid,
+              email: user.email || '',
+              name: user.displayName || null,
             });
           }
         } catch (error) {
@@ -44,76 +37,98 @@ export const useAuth = () => {
     return unsubscribe;
   }, []);
 
-  const loginWithPhone = async (phoneNumber: string) => {
+  const login = async (email: string, password: string) => {
+    setIsAuthLoading(true);
     try {
-      setIsPhoneAuthLoading(true);
-      
-      // Setup recaptcha
-      const appVerifier = setupRecaptcha('recaptcha-container');
-      
-      // Format phone number
-      const formattedPhoneNumber = phoneNumber.startsWith('+91') 
-        ? phoneNumber 
-        : `+91${phoneNumber}`;
-
-      // Send OTP
-      const confirmationResult = await sendOTP(formattedPhoneNumber, appVerifier);
+      const firebaseUser = await loginWithEmail(email, password);
       
       toast({
-        title: "OTP Sent",
-        description: `Verification code sent to ${formattedPhoneNumber}`,
+        title: "Welcome back!",
+        description: "You have successfully logged in.",
       });
-
-      return confirmationResult;
+      
+      return firebaseUser;
     } catch (error: any) {
-      console.error('Error during phone authentication:', error);
+      console.error('Login error:', error);
+      let errorMessage = "Login failed. Please try again.";
+      
+      if (error.code === 'auth/user-not-found') {
+        errorMessage = "No account found with this email.";
+      } else if (error.code === 'auth/wrong-password') {
+        errorMessage = "Incorrect password.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email address.";
+      }
+      
       toast({
-        title: "Error",
-        description: error.message || "Failed to send OTP",
+        title: "Login Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
     } finally {
-      setIsPhoneAuthLoading(false);
+      setIsAuthLoading(false);
     }
   };
 
-  const verifyOTP = async (confirmationResult: any, otp: string) => {
+  const register = async (email: string, password: string, name: string) => {
+    setIsAuthLoading(true);
     try {
-      setIsPhoneAuthLoading(true);
-      const result = await confirmationResult.confirm(otp);
+      const firebaseUser = await registerWithEmail(email, password);
+      
+      // Create user in our database
+      try {
+        await apiRequest('POST', '/api/users', {
+          firebaseUid: firebaseUser.uid,
+          email: email,
+          name: name,
+        });
+      } catch (dbError) {
+        console.error('Database user creation error:', dbError);
+      }
       
       toast({
-        title: "Success",
-        description: "Login successful! Welcome to Park Sarthi!",
+        title: "Welcome to Park Sarthi!",
+        description: "Your account has been created successfully. You've earned 100 welcome points!",
       });
-
-      return result.user;
+      
+      return firebaseUser;
     } catch (error: any) {
-      console.error('Error verifying OTP:', error);
+      console.error('Registration error:', error);
+      let errorMessage = "Registration failed. Please try again.";
+      
+      if (error.code === 'auth/email-already-in-use') {
+        errorMessage = "An account with this email already exists.";
+      } else if (error.code === 'auth/weak-password') {
+        errorMessage = "Password should be at least 6 characters.";
+      } else if (error.code === 'auth/invalid-email') {
+        errorMessage = "Invalid email address.";
+      }
+      
       toast({
-        title: "Error",
-        description: "Invalid OTP. Please try again.",
+        title: "Registration Failed",
+        description: errorMessage,
         variant: "destructive",
       });
       throw error;
     } finally {
-      setIsPhoneAuthLoading(false);
+      setIsAuthLoading(false);
     }
   };
 
   const logout = async () => {
     try {
-      await auth.signOut();
+      await logoutUser();
+      setUser(null);
       toast({
-        title: "Logged Out",
+        title: "Logged out",
         description: "You have been successfully logged out.",
       });
     } catch (error: any) {
-      console.error('Error during logout:', error);
+      console.error('Logout error:', error);
       toast({
         title: "Error",
-        description: "Failed to logout",
+        description: "Failed to logout. Please try again.",
         variant: "destructive",
       });
     }
@@ -122,9 +137,9 @@ export const useAuth = () => {
   return {
     user,
     loading,
-    isPhoneAuthLoading,
-    loginWithPhone,
-    verifyOTP,
-    logout
+    login,
+    register,
+    logout,
+    isAuthLoading,
   };
 };

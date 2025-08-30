@@ -4,42 +4,52 @@
 @tailwind utilities;
 
 :root {
+  /* ParkPlus inspired color scheme */
   --background: hsl(0, 0%, 100%);
   --foreground: hsl(222.2, 84%, 4.9%);
   --card: hsl(0, 0%, 100%);
   --card-foreground: hsl(222.2, 84%, 4.9%);
   --popover: hsl(0, 0%, 100%);
   --popover-foreground: hsl(222.2, 84%, 4.9%);
-  --primary: hsl(221.2, 83.2%, 53.3%);
+  --primary: hsl(217, 91%, 60%); /* ParkPlus blue */
   --primary-foreground: hsl(210, 40%, 98%);
-  --secondary: hsl(210, 40%, 96%);
-  --secondary-foreground: hsl(222.2, 84%, 4.9%);
+  --secondary: hsl(158, 64%, 52%); /* ParkPlus green */
+  --secondary-foreground: hsl(0, 0%, 100%);
   --muted: hsl(210, 40%, 96%);
   --muted-foreground: hsl(215.4, 16.3%, 46.9%);
-  --accent: hsl(210, 40%, 96%);
-  --accent-foreground: hsl(222.2, 84%, 4.9%);
+  --accent: hsl(217, 91%, 60%);
+  --accent-foreground: hsl(210, 40%, 98%);
   --destructive: hsl(0, 84.2%, 60.2%);
   --destructive-foreground: hsl(210, 40%, 98%);
   --border: hsl(214.3, 31.8%, 91.4%);
   --input: hsl(214.3, 31.8%, 91.4%);
-  --ring: hsl(221.2, 83.2%, 53.3%);
-  --chart-1: hsl(221.2, 83.2%, 53.3%);
-  --chart-2: hsl(159.7826, 100%, 36.0784%);
+  --ring: hsl(217, 91%, 60%);
+  --chart-1: hsl(217, 91%, 60%);
+  --chart-2: hsl(158, 64%, 52%);
   --chart-3: hsl(42.0290, 92.8251%, 56.2745%);
   --chart-4: hsl(147.1429, 78.5047%, 41.9608%);
   --chart-5: hsl(341.4894, 75.2000%, 50.9804%);
-  --sidebar: hsl(180, 6.6667%, 97.0588%);
-  --sidebar-foreground: hsl(210, 25%, 7.8431%);
-  --sidebar-primary: hsl(221.2, 83.2%, 53.3%);
+  --sidebar: hsl(0, 0%, 98%);
+  --sidebar-foreground: hsl(222.2, 84%, 4.9%);
+  --sidebar-primary: hsl(217, 91%, 60%);
   --sidebar-primary-foreground: hsl(210, 40%, 98%);
-  --sidebar-accent: hsl(210, 40%, 96%);
-  --sidebar-accent-foreground: hsl(222.2, 84%, 4.9%);
+  --sidebar-accent: hsl(158, 64%, 52%);
+  --sidebar-accent-foreground: hsl(0, 0%, 100%);
   --sidebar-border: hsl(214.3, 31.8%, 91.4%);
-  --sidebar-ring: hsl(221.2, 83.2%, 53.3%);
+  --sidebar-ring: hsl(217, 91%, 60%);
+  /* Custom ParkPlus colors */
+  --parkplus-blue: hsl(217, 91%, 60%);
+  --parkplus-green: hsl(158, 64%, 52%);
+  --parkplus-orange: hsl(32, 95%, 44%);
+  --parkplus-light-blue: hsl(217, 91%, 95%);
+  --parkplus-light-green: hsl(158, 64%, 95%);
+  --wallet-gold: hsl(45, 100%, 51%);
+  --wallet-silver: hsl(0, 0%, 75%);
+  --wallet-bronze: hsl(30, 100%, 40%);
   --font-sans: 'Inter', system-ui, sans-serif;
   --font-serif: Georgia, serif;
   --font-mono: Menlo, monospace;
-  --radius: 0.5rem;
+  --radius: 0.75rem;
 }
 
 .dark {
@@ -79,7 +89,19 @@
 }
 
 .gradient-bg {
-  background: linear-gradient(135deg, #1E40AF 0%, #10B981 100%);
+  background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(158, 64%, 52%) 100%);
+}
+
+.parkplus-gradient {
+  background: linear-gradient(135deg, hsl(217, 91%, 60%) 0%, hsl(158, 64%, 52%) 50%, hsl(32, 95%, 44%) 100%);
+}
+
+.wallet-gradient {
+  background: linear-gradient(135deg, hsl(45, 100%, 51%) 0%, hsl(32, 95%, 44%) 100%);
+}
+
+.success-gradient {
+  background: linear-gradient(135deg, hsl(158, 64%, 52%) 0%, hsl(147, 78%, 42%) 100%);
 }
 
 .card-hover {
