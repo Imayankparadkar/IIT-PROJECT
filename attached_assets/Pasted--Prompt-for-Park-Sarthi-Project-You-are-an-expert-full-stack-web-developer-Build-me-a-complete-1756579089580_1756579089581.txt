@@ -1,0 +1,218 @@
+🚀 Prompt for Park Sarthi Project
+
+You are an expert full-stack web developer. Build me a complete, modern, responsive website for my project named "Park Sarthi". The website should work seamlessly on mobile, tablet, and desktop. Use clean UI/UX design principles, modern colors, smooth animations, and easy navigation. Add visuals, icons, and responsive layout. Code should be production-ready.
+
+🏷 General Branding
+
+Logo (Navbar left): Create a unique minimal logo for "Park Sarthi".
+
+Tagline (Hero section): Your Spot, Just a Tap Away
+Sub-line: Making parking simpler, faster, and stress-free
+
+🔑 Navbar (Top Right)
+
+Login
+
+Signup
+
+Logout
+
+🎯 Hero Section
+
+Tagline (left side with background illustration of cars/parking).
+
+On the right side, provide quick options:
+
+Challan Findings
+
+Vehicle No. → Name Fetch (with location)
+
+🚗 Do More with Park Sarthi Section
+
+Create 5 interactive feature cards with icons/illustrations:
+
+Pre-Slot Booking
+visual related to that particular spot after clicking on which we will get a direction to go to that spot
+using Mappls Api key : b963a6654470c7b9e0683f0a979ffa16  
+
+
+Input fields: Name, Vehicle Number, Slot Booking Timing.
+
+On-Time Booking
+
+Real-time booking for immediate parking.
+
+Car & Bike Services
+
+Documents Saving Folder (Secure)
+
+Store License, RC, PUC.
+
+Nearest EV Station Finder
+
+Shows real-time nearest charging stations.
+
+ℹ About Section (Navbar Link)
+
+Heading: Helping customers with their car needs and beyond
+
+Paragraph Content:
+"What started as a mission to connect commuters to safe, secure, and digitized parking spaces all across the country has now expanded to become a safe space to cater to people’s car needs."
+
+Add Future Scope (write creatively):
+
+AI-based parking demand prediction
+
+Integration with smart city projects
+
+Voice-enabled booking
+
+Add Hypothetical Clients (with mall/place logos & visuals):
+
+C21 Mall Indore
+
+Treasure Island Mall Indore
+
+Orbit Mall
+
+Colleges, Hospitals with big parking spaces
+
+Add Testimonials (Happy Customers) section with carousel cards.
+
+📝 Business Queries Section
+
+Form fields:
+
+I am looking for: [dropdown]
+
+Full Name
+
+Email
+
+Mobile No.
+
+City
+
+Message
+
+⚡ Quick Links & Footer
+
+Quick Links Section:
+
+Contact Us
+
+Blogs
+
+SBI FASTag Recharge
+
+Telangana Challan
+
+Tech Blogs
+
+Valet Services
+
+Bug Bounty
+
+FASTag Annual Pass
+
+Products Section:
+
+Cars
+
+Challan Information
+
+FASTag
+
+Parking Solutions
+
+Fuel Price
+
+RTO
+
+Loans
+
+Reach Us Section:
+
+support@myparkplus.com
+
+For business enquiries: sales@myparkplus.com
+
+Address: Unitech Cyber Park, 5th Floor, Tower A, Sec-39, Gurugram, Haryana 122022
+
+🏢 Park Sarthi for Businesses Section
+
+Showcase with animated/visual boxes:
+
+ANPR (Automatic Number Plate Recognition)
+
+Real-time visual analytics of parking spots
+
+Shortest path for EV solutions
+
+🛠 Our Products Section
+
+Grid with cards:
+
+Car Parking
+
+Traffic Challan
+
+EV Solution
+
+Valet Services
+
+💖 More Reasons to Love Park Sarthi
+
+List with icons & illustrations:
+
+One FASTag for all needs (Parking, Tolls, Malls, Fuel, etc.)
+
+Save time, fuel, and effort with smart parking
+
+Reminders for Insurance & PUC renewals
+
+Easy access to RTO services, traffic rules, etc.
+
+📞 Contact & Get in Touch Section
+
+Call to action:
+"Let us solve your problems next – Get in Touch!"
+
+📊 Case Studies (Replace with Indore Malls)
+
+Show 3–4 case studies with images and text:
+
+C21 Mall Indore – Solving parking capacity issues
+
+Treasure Island Mall Indore – Providing real-time parking visibility
+
+Orbit Mall Indore – Automated residential parking solutions
+(Use placeholders/images for visuals)
+
+📌 Final Notes
+
+Website must be fully responsive (mobile-first).
+
+Use modern UI framework (TailwindCSS / Bootstrap).
+
+Add animations for hero section, cards, and buttons.
+
+Include icons/illustrations for each service.
+ 
+
+
+
+make it all things working and please take reference from this website https://parkplus.io/ take ui design from this and also working and some content form this
+
+and also make it wallet add in it to make it gamefield like website beauce i want to make this website for my hackahton protype this is my theme A gamification system related to location technologies for a Map-based app using Mappls APIs & SDKs. 
+
+
+
+make this things using dummy data to make fully working and if you want to use database use firebase in it and if you want to use three.js in it use it 
+
+make also chat bot and make it fully working using gemini free api key: AIzaSyDyVkm3-FSuaeh-TUXmjGZusxCUZB6U9aM
+
+make it fully working now
+
+
+now give me good prompt for make this idea using replit agent
