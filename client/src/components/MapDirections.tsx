@@ -69,13 +69,13 @@ export default function MapDirections({
       console.log('Map container ID:', mapContainer.current.id);
 
       // Use simple iframe approach for reliable map display
-      const iframe = simpleMappls.createEmbeddedMap(
+      const mapElement = simpleMappls.createEmbeddedMap(
         mapContainer.current.id,
         destination,
         userLoc
       );
       
-      setMap(iframe);
+      setMap(mapElement);
       console.log('Simple map initialized successfully');
 
       // Calculate basic route information
@@ -165,7 +165,7 @@ export default function MapDirections({
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <p className="text-sm text-gray-600">Loading Mappls Map...</p>
+                  <p className="text-sm text-gray-600">Getting your location...</p>
                 </div>
               </div>
             )}

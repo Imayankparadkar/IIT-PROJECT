@@ -10,7 +10,7 @@ export class SimpleMappls {
   }
 
   // Initialize a simple embedded map using iframe approach
-  createEmbeddedMap(containerId: string, destination: Location, origin?: Location): HTMLIFrameElement {
+  createEmbeddedMap(containerId: string, destination: Location, origin?: Location): HTMLElement {
     const container = document.getElementById(containerId);
     if (!container) {
       throw new Error(`Container with id ${containerId} not found`);
@@ -26,8 +26,8 @@ export class SimpleMappls {
     iframe.style.border = 'none';
     iframe.style.borderRadius = '8px';
 
-    // Build URL for embedded map with directions
-    let mapUrl = `https://maps.mappls.com/embed?`;
+    // Build URL for embedded map with directions using correct domain
+    let mapUrl = `https://maps.mapmyindia.com/embed?`;
     
     if (origin) {
       // Show route from origin to destination
@@ -37,15 +37,32 @@ export class SimpleMappls {
       mapUrl += `q=${destination.lat},${destination.lng}&zoom=15`;
     }
 
+    // Try to load the iframe, but provide fallback if it fails
     iframe.src = mapUrl;
+    iframe.onload = () => {
+      console.log('Map iframe loaded successfully');
+    };
+    iframe.onerror = () => {
+      console.error('Map iframe failed to load, showing fallback');
+      this.createFallbackMap(container, destination, origin);
+    };
+
     container.appendChild(iframe);
 
-    return iframe;
+    // Set a timeout to show fallback if iframe doesn't load
+    setTimeout(() => {
+      if (iframe.contentDocument === null || iframe.contentDocument.readyState !== 'complete') {
+        console.log('Map iframe timeout, showing fallback');
+        this.createFallbackMap(container, destination, origin);
+      }
+    }, 5000);
+
+    return container;
   }
 
   // Get directions URL for external navigation
   getDirectionsUrl(destination: Location): string {
-    return `https://maps.mappls.com/directions?destination=${destination.lat},${destination.lng}`;
+    return `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
   }
 
   // Get Google Maps fallback URL
@@ -104,6 +121,30 @@ export class SimpleMappls {
 
   private toRad(value: number): number {
     return value * Math.PI / 180;
+  }
+
+  // Create a fallback visual map when iframe fails
+  private createFallbackMap(container: HTMLElement, destination: Location, origin?: Location) {
+    const routeInfo = origin ? this.calculateDistance(origin, destination) : { distance: 'N/A', duration: 'N/A' };
+    
+    container.innerHTML = `
+      <div class="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 border border-blue-200 rounded-lg flex flex-col items-center justify-center p-6">
+        <div class="text-center mb-4">
+          <div class="text-4xl mb-2">🗺️</div>
+          <h3 class="text-lg font-semibold text-blue-800 mb-2">${destination.address || 'Destination'}</h3>
+          <div class="text-sm text-blue-600 space-y-1">
+            <div>📍 Lat: ${destination.lat.toFixed(4)}, Lng: ${destination.lng.toFixed(4)}</div>
+            ${origin ? `<div>📍 From: ${origin.lat.toFixed(4)}, ${origin.lng.toFixed(4)}</div>` : ''}
+            ${origin ? `<div>📏 Distance: ${routeInfo.distance}</div>` : ''}
+            ${origin ? `<div>⏱️ Est. Time: ${routeInfo.duration}</div>` : ''}
+          </div>
+        </div>
+        <div class="text-center">
+          <p class="text-sm text-gray-600 mb-3">Interactive map unavailable</p>
+          <p class="text-xs text-gray-500">Use external navigation buttons below</p>
+        </div>
+      </div>
+    `;
   }
 }
 
