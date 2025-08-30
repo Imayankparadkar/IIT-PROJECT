@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 
-const API_KEY = import.meta.env.VITE_GEMINI_API_KEY || "AIzaSyDyVkm3-FSuaeh-TUXmjGZusxCUZB6U9aM";
+const API_KEY = import.meta.env.VITE_GEMINI_API_KEY;
 const genAI = new GoogleGenerativeAI(API_KEY);
 
 export interface ChatMessage {
@@ -12,11 +12,14 @@ export interface ChatMessage {
 }
 
 export class ParkSarthiChatbot {
-  private model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+  private model = API_KEY ? genAI.getGenerativeModel({ model: "gemini-1.5-flash" }) : null;
   private conversationHistory: ChatMessage[] = [];
 
   async sendMessage(userMessage: string): Promise<string> {
     try {
+      if (!this.model || !API_KEY) {
+        return "AI chatbot is currently unavailable. Please ensure the Gemini API key is configured.";
+      }
       // Add user message to history
       this.conversationHistory.push({
         role: 'user',
