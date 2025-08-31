@@ -10,7 +10,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
 import { mapplsService, ParkingLocation } from '@/lib/mappls';
 import { realtimeDbFunctions } from '@/lib/firebase';
-import MapDirections from './MapDirections';
+import NavigationModal from './NavigationModal';
 import { 
   Search, 
   MapPin, 
@@ -372,9 +372,10 @@ export default function RealTimeParkingBooking() {
                     setShowMapDirections(true);
                   }}
                   className="w-full"
+                  data-testid={`button-directions-${mall.id}`}
                 >
                   <Navigation className="h-4 w-4 mr-2" />
-                  Directions
+                  Voice Navigation
                 </Button>
               </div>
             </CardContent>
@@ -559,9 +560,9 @@ export default function RealTimeParkingBooking() {
             )}
 
             <div className="grid grid-cols-2 gap-2">
-              <Button onClick={handleGetDirections} className="w-full">
+              <Button onClick={handleGetDirections} className="w-full" data-testid="button-get-navigation">
                 <Navigation className="h-4 w-4 mr-2" />
-                Get Directions
+                Start Voice Navigation
               </Button>
               <Button 
                 variant="outline" 
@@ -575,9 +576,9 @@ export default function RealTimeParkingBooking() {
         </DialogContent>
       </Dialog>
 
-      {/* Map Directions Modal */}
+      {/* Navigation Modal with Voice Guidance */}
       {selectedMall && (
-        <MapDirections
+        <NavigationModal
           isOpen={showMapDirections}
           onClose={() => setShowMapDirections(false)}
           destination={{
