@@ -42,43 +42,44 @@ export class SimpleMappls {
 
         console.log('Loading Mappls SDK with API key...');
         
-        // Load the SDK with proper callback
-        const callbackName = 'mapplsCallback_' + Date.now();
-        (window as any)[callbackName] = () => {
-          console.log('Mappls SDK callback executed');
-          delete (window as any)[callbackName];
-          try {
-            this.createInteractiveMap(container, destination, origin);
-            resolve();
-          } catch (error) {
-            console.error('Error creating interactive map:', error);
-            reject(error);
-          }
-        };
-
+        // Try a simpler approach first - load without callback
         const script = document.createElement('script');
-        script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&callback=${callbackName}`;
+        script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector`;
         script.async = true;
-        script.defer = true;
 
         script.onload = () => {
           console.log('Mappls SDK script loaded from server');
+          // Wait for SDK to be available
+          const checkSDK = () => {
+            if ((window as any).mappls) {
+              console.log('Mappls SDK is available');
+              try {
+                this.createInteractiveMap(container, destination, origin);
+                resolve();
+              } catch (error) {
+                console.error('Error creating interactive map:', error);
+                reject(error);
+              }
+            } else {
+              console.log('Waiting for Mappls SDK...');
+              setTimeout(checkSDK, 100);
+            }
+          };
+          checkSDK();
         };
 
         script.onerror = () => {
           console.error('Failed to load Mappls SDK script');
-          delete (window as any)[callbackName];
           reject(new Error('SDK script load failed'));
         };
 
-        // Timeout after 15 seconds
+        // Timeout after 20 seconds
         setTimeout(() => {
-          if ((window as any)[callbackName]) {
+          if (!(window as any).mappls) {
             console.error('Mappls SDK loading timeout');
-            delete (window as any)[callbackName];
             reject(new Error('SDK load timeout'));
           }
-        }, 15000);
+        }, 20000);
 
         document.head.appendChild(script);
         console.log('Mappls SDK script added to page');
@@ -102,71 +103,77 @@ export class SimpleMappls {
 
       console.log('Creating Mappls map instance...');
 
-      // Initialize the map with proper configuration
-      const center = origin ? [(origin.lng + destination.lng) / 2, (origin.lat + destination.lat) / 2] : [destination.lng, destination.lat];
-      
       // Ensure the div is properly attached before creating map
       setTimeout(() => {
         try {
-          const map = new (window as any).mappls.Map(mapDiv, {
+          // Initialize the map with basic configuration
+          const center = origin ? [(origin.lng + destination.lng) / 2, (origin.lat + destination.lat) / 2] : [destination.lng, destination.lat];
+          
+          console.log('Initializing map with center:', center);
+          
+          const map = new (window as any).mappls.Map(mapDiv.id, {
             center: center,
-            zoom: origin ? 12 : 15,
-            hash: false,
-            style: 'streets'
+            zoom: origin ? 12 : 15
           });
 
-          console.log('Map instance created, adding markers...');
+          console.log('Map instance created successfully');
 
-          // Wait for map to be ready
-          map.on('load', () => {
-            console.log('Map loaded, adding markers and route...');
+          // Add markers immediately (don't wait for load event)
+          setTimeout(() => {
+            try {
+              console.log('Adding markers to map...');
 
-            // Add destination marker with popup
-            const destinationMarker = new (window as any).mappls.Marker({
-              color: '#ef4444'
-            }).setLngLat([destination.lng, destination.lat]).addTo(map);
+              // Add destination marker
+              const destinationMarker = new (window as any).mappls.Marker({
+                color: '#ef4444'
+              }).setLngLat([destination.lng, destination.lat]).addTo(map);
 
-            // Add popup to destination marker
-            const destinationPopup = new (window as any).mappls.Popup({ offset: 25 })
-              .setHTML(`<div><strong>🎯 Destination</strong><br/>${destination.address || 'Parking Location'}</div>`);
-            destinationMarker.setPopup(destinationPopup);
+              console.log('Destination marker added');
 
-            // Add origin marker if available
-            if (origin) {
-              const originMarker = new (window as any).mappls.Marker({
-                color: '#22c55e'
-              }).setLngLat([origin.lng, origin.lat]).addTo(map);
+              // Add origin marker if available
+              if (origin) {
+                const originMarker = new (window as any).mappls.Marker({
+                  color: '#22c55e'
+                }).setLngLat([origin.lng, origin.lat]).addTo(map);
 
-              // Add popup to origin marker
-              const originPopup = new (window as any).mappls.Popup({ offset: 25 })
-                .setHTML(`<div><strong>📍 Your Location</strong><br/>${origin.address || 'Current Position'}</div>`);
-              originMarker.setPopup(originPopup);
+                console.log('Origin marker added');
 
-              // Try to add route if both points are available
-              this.addRouteToMap(map, origin, destination);
+                // Fit bounds to show both points
+                try {
+                  const bounds = new (window as any).mappls.LngLatBounds();
+                  bounds.extend([origin.lng, origin.lat]);
+                  bounds.extend([destination.lng, destination.lat]);
+                  map.fitBounds(bounds, { padding: 50 });
+                  console.log('Map bounds set successfully');
+                } catch (boundsError) {
+                  console.log('Could not set bounds, using default zoom');
+                }
+              }
 
-              // Fit bounds to show both points
-              const bounds = new (window as any).mappls.LngLatBounds();
-              bounds.extend([origin.lng, origin.lat]);
-              bounds.extend([destination.lng, destination.lat]);
-              map.fitBounds(bounds, { padding: 50 });
+              console.log('Interactive map setup completed successfully');
+            } catch (markerError) {
+              console.error('Error adding markers:', markerError);
             }
+          }, 500);
 
-            console.log('Interactive map setup completed successfully');
-          });
+          // Handle map errors
+          if (map.on) {
+            map.on('error', (e: any) => {
+              console.error('Map error:', e);
+            });
+          }
 
-          map.on('error', (e: any) => {
-            console.error('Map error:', e);
-          });
         } catch (mapError) {
           console.error('Error creating map instance:', mapError);
-          throw mapError;
+          // Fall back to enhanced fallback
+          this.createEnhancedFallbackMap(container, destination, origin);
         }
-      }, 100);
+      }, 200);
 
     } catch (error) {
-      console.error('Error creating interactive map:', error);
-      throw error;
+      console.error('Error in createInteractiveMap:', error);
+      // Fall back to enhanced fallback
+      this.createEnhancedFallbackMap(container, destination, origin);
     }
   }
 
