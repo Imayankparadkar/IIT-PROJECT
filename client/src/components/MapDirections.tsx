@@ -101,24 +101,81 @@ export default function MapDirections({
     }
   };
 
-  const openInMappls = () => {
-    const mapplsUrl = simpleMappls.getDirectionsUrl(destination, userLocation || undefined);
-    window.open(mapplsUrl, '_blank');
+  const openInMappls = async () => {
+    try {
+      // Get fresh location quickly for navigation
+      const currentLocation = await simpleMappls.getCurrentLocation();
+      const mapplsUrl = simpleMappls.getDirectionsUrl(destination, currentLocation);
+      console.log('Opening Mappls with locations:', currentLocation, destination);
+      window.open(mapplsUrl, '_blank');
+    } catch (error) {
+      console.error('Error getting location for Mappls:', error);
+      // Fallback to destination only
+      const mapplsUrl = simpleMappls.getDirectionsUrl(destination);
+      window.open(mapplsUrl, '_blank');
+    }
   };
 
-  const openInGoogleMaps = () => {
-    const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination, userLocation || undefined);
-    window.open(googleMapsUrl, '_blank');
+  const openInGoogleMaps = async () => {
+    try {
+      // Get fresh location quickly for navigation
+      const currentLocation = await simpleMappls.getCurrentLocation();
+      const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination, currentLocation);
+      console.log('Opening Google Maps with locations:', currentLocation, destination);
+      window.open(googleMapsUrl, '_blank');
+    } catch (error) {
+      console.error('Error getting location for Google Maps:', error);
+      // Fallback to destination only
+      const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination);
+      window.open(googleMapsUrl, '_blank');
+    }
   };
 
-  // Quick navigation without waiting for location
-  const openQuickNavigation = (type: 'mappls' | 'google') => {
+  // Instant navigation - opens immediately while trying to get location in background
+  const openQuickNavigation = async (type: 'mappls' | 'google') => {
     if (type === 'mappls') {
-      const url = `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
-      window.open(url, '_blank');
+      // Try to get location quickly, but don't wait
+      const locationPromise = simpleMappls.getCurrentLocation();
+      
+      try {
+        // Wait max 500ms for location
+        const location = await Promise.race([
+          locationPromise,
+          new Promise<Location>((resolve) => setTimeout(() => resolve({
+            lat: 22.7196,
+            lng: 75.8577,
+            address: "Quick fallback"
+          }), 500))
+        ]);
+        
+        const url = simpleMappls.getDirectionsUrl(destination, location);
+        console.log('Quick Mappls navigation with location:', location);
+        window.open(url, '_blank');
+      } catch {
+        const url = `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
+        window.open(url, '_blank');
+      }
     } else {
-      const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
-      window.open(url, '_blank');
+      // Same for Google Maps
+      const locationPromise = simpleMappls.getCurrentLocation();
+      
+      try {
+        const location = await Promise.race([
+          locationPromise,
+          new Promise<Location>((resolve) => setTimeout(() => resolve({
+            lat: 22.7196,
+            lng: 75.8577,
+            address: "Quick fallback"
+          }), 500))
+        ]);
+        
+        const url = simpleMappls.getGoogleMapsUrl(destination, location);
+        console.log('Quick Google Maps navigation with location:', location);
+        window.open(url, '_blank');
+      } catch {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+        window.open(url, '_blank');
+      }
     }
   };
 
@@ -215,22 +272,22 @@ export default function MapDirections({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <Button
                 onClick={openInMappls}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700"
                 variant="default"
                 size="lg"
               >
                 <Navigation className="h-4 w-4" />
-                Navigate with Mappls
+                🧭 Navigate with Mappls
               </Button>
               
               <Button
                 onClick={openInGoogleMaps}
-                className="flex items-center gap-2"
+                className="flex items-center gap-2 bg-green-600 hover:bg-green-700"
                 variant="default"
                 size="lg"
               >
                 <Navigation className="h-4 w-4" />
-                Navigate with Google Maps
+                🗺️ Navigate with Google Maps
               </Button>
             </div>
             

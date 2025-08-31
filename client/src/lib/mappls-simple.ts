@@ -84,16 +84,18 @@ export class SimpleMappls {
 
   // Get directions URL for external navigation with origin if available
   getDirectionsUrl(destination: Location, origin?: Location): string {
-    if (origin && origin.lat !== 22.7196) { // Don't use default Indore location as origin
-      return `https://maps.mapmyindia.com/directions?origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&mode=driving`;
+    if (origin && origin.address !== 'Indore, Madhya Pradesh (Default)' && origin.address !== 'Indore, Madhya Pradesh (Timeout)' && origin.address !== 'Indore, Madhya Pradesh (Error)') {
+      // Use actual user location
+      return `https://maps.mapmyindia.com/directions?origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&mode=driving&avoidTolls=false`;
     }
-    return `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
+    return `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}&mode=driving`;
   }
 
   // Get Google Maps fallback URL with origin if available
   getGoogleMapsUrl(destination: Location, origin?: Location): string {
-    if (origin && origin.lat !== 22.7196) { // Don't use default Indore location as origin
-      return `https://www.google.com/maps/dir/${origin.lat},${origin.lng}/${destination.lat},${destination.lng}`;
+    if (origin && origin.address !== 'Indore, Madhya Pradesh (Default)' && origin.address !== 'Indore, Madhya Pradesh (Timeout)' && origin.address !== 'Indore, Madhya Pradesh (Error)') {
+      // Use actual user location for turn-by-turn navigation
+      return `https://www.google.com/maps/dir/${origin.lat},${origin.lng}/${destination.lat},${destination.lng}/@${destination.lat},${destination.lng},15z/data=!3m1!4b1!4m2!4m1!3e0`;
     }
     return `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
   }
@@ -111,20 +113,20 @@ export class SimpleMappls {
         return;
       }
 
-      // Set a faster timeout to prevent hanging
+      // Set a very fast timeout for navigation buttons
       const timeoutId = setTimeout(() => {
-        console.log('Geolocation timeout, using fallback location');
+        console.log('Quick geolocation timeout, using fallback location');
         resolve({
           lat: 22.7196,
           lng: 75.8577,
           address: "Indore, Madhya Pradesh (Timeout)"
         });
-      }, 3000); // Reduced timeout to 3 seconds
+      }, 1500); // Very fast timeout for immediate navigation
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
           clearTimeout(timeoutId);
-          console.log('Got user location:', position.coords);
+          console.log('Got user location quickly:', position.coords);
           resolve({
             lat: position.coords.latitude,
             lng: position.coords.longitude,
@@ -133,14 +135,14 @@ export class SimpleMappls {
         },
         (error) => {
           clearTimeout(timeoutId);
-          console.log('Geolocation error:', error.message, 'using fallback location');
+          console.log('Quick geolocation error:', error.message, 'using fallback location');
           resolve({
             lat: 22.7196,
             lng: 75.8577,
             address: "Indore, Madhya Pradesh (Error)"
           });
         },
-        { enableHighAccuracy: false, timeout: 2500, maximumAge: 60000 }
+        { enableHighAccuracy: true, timeout: 1000, maximumAge: 30000 } // Very aggressive settings for speed
       );
     });
   }
