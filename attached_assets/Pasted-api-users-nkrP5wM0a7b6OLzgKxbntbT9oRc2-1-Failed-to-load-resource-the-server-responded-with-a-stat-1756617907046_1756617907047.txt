@@ -1,0 +1,47 @@
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+dialog.tsx:542  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ dialog.tsx:542
+react-dom.development.js:86  Warning: Cannot update a component (`Toaster`) while rendering a different component (`RealTimeParkingBooking`). To locate the bad setState() call inside `RealTimeParkingBooking`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render
+    at RealTimeParkingBooking (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/src/components/RealTimeParkingBooking.tsx:41:20)
+    at div
+    at https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVTGVYSA.js?v=8ccf896b:42:13
+    at Presence (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-6IAFSJCN.js?v=8ccf896b:174:11)
+    at https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=8ccf896b:389:13
+    at _c5 (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/src/components/ui/tabs.tsx:72:12)
+    at div
+    at https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-GVTGVYSA.js?v=8ccf896b:42:13
+    at Provider (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-6IAFSJCN.js?v=8ccf896b:51:15)
+    at https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tabs.js?v=8ccf896b:267:7
+    at div
+    at _c3 (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/src/components/ui/card.tsx:45:12)
+    at div
+    at _c (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/src/components/ui/card.tsx:20:11)
+    at div
+    at div
+    at div
+    at ServicesPage (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/src/pages/services.tsx:43:37)
+    at Route (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8ccf896b:323:16)
+    at Switch (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/wouter.js?v=8ccf896b:379:17)
+    at Router
+    at Provider (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/chunk-6IAFSJCN.js?v=8ccf896b:51:15)
+    at TooltipProvider (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@radix-ui_react-tooltip.js?v=8ccf896b:2246:5)
+    at QueryClientProvider (https://0b46bdf4-8d43-4ff5-9597-b3cd34b681b4-00-15widp2z5r3te.kirk.replit.dev/@fs/home/runner/workspace/node_modules/.vite/deps/@tanstack_react-query.js?v=8ccf896b:2805:3)
+    at App
+printWarning @ react-dom.development.js:86
+2dialog.tsx:542  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ dialog.tsx:542
+mappls-simple.ts:43 Loading Mappls SDK with API key...
+mappls-simple.ts:84 Mappls SDK script added to page
+mappls-simple.ts:65 Mappls SDK script loaded from server
+mappls-simple.ts:48 Mappls SDK callback executed
+mappls-simple.ts:103 Creating Mappls map instance...
+mappls-simple.ts:113 Map instance created, adding markers...
+mappls-simple.ts:117 Map loaded, adding markers and route...
+map_sdk?v=3.0&layer=vector&callback=mapplsCallback_1756617846081:1  Error:Please Pass Map Object
+warn @ map_sdk?v=3.0&layer=vector&callback=mapplsCallback_1756617846081:1
+map_sdk?v=3.0&layer=vector&callback=mapplsCallback_1756617846081:1  Uncaught TypeError: Cannot read properties of undefined (reading 'getCanvasContainer')
+dialog.tsx:542  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
