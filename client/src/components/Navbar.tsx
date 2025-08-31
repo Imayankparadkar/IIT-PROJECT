@@ -32,9 +32,9 @@ export default function Navbar() {
             <Link href="/">
               <div className="flex items-center space-x-3 cursor-pointer">
                 <img 
-                  src="/attached_assets/WhatsApp_Image_2025-08-31_at_01.12.54_10389c77-removebg-preview_1756606944259.png" 
+                  src="/logo.png" 
                   alt="Park Sarthi Logo" 
-                  className="w-10 h-10 object-contain"
+                  className="w-12 h-12 object-contain"
                 />
                 <span className="text-xl font-bold text-primary">Park Sarthi</span>
               </div>
