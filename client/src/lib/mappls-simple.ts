@@ -121,14 +121,11 @@ export class SimpleMappls {
           
           console.log('Initializing map with center:', center);
           
-          const map = new (window as any).mappls.Map(mapDiv.id, {
+          const map = new (window as any).mappls.Map({
+            container: mapDiv.id,
+            style: `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/style.json`,
             center: center,
-            zoom: origin ? 12 : 15,
-            style: 'standard',
-            doubleClickZoom: true,
-            dragPan: true,
-            scrollZoom: true,
-            touchZoom: true
+            zoom: origin ? 12 : 15
           });
 
           console.log('Map instance created successfully');

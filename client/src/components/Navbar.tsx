@@ -3,7 +3,9 @@ import { Link } from 'wouter';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
+import { WalletWidget } from '@/components/WalletWidget';
 import AuthModal from '@/components/AuthModal';
+import { Coins } from 'lucide-react';
 
 export default function Navbar() {
   const { user, logout } = useAuth();

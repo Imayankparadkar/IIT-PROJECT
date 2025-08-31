@@ -275,6 +275,88 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Contact form endpoint
   app.use("/api/contact", contactRouter);
 
+  // Simple wallet endpoints integrated with existing system
+  app.get("/api/wallet/:userId", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const user = await storage.getUser(userId);
+      
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+      
+      res.json({
+        id: 1,
+        userId,
+        balance: user.points || 0,
+        totalEarned: user.points || 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      });
+    } catch (error) {
+      console.error('Error fetching wallet:', error);
+      res.status(500).json({ message: 'Failed to fetch wallet' });
+    }
+  });
+
+  app.post("/api/wallet/:userId/earn", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      const { amount, action, description } = req.body;
+      
+      const updatedUser = await storage.updateUserPoints(userId, amount);
+      
+      const wallet = {
+        id: 1,
+        userId,
+        balance: updatedUser.points,
+        totalEarned: updatedUser.points,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      res.json({ 
+        wallet,
+        message: `You earned ${amount} coins for ${description}!`
+      });
+    } catch (error) {
+      console.error('Error adding coins:', error);
+      res.status(500).json({ message: 'Failed to add coins' });
+    }
+  });
+
+  app.get("/api/wallet/:userId/transactions", async (req, res) => {
+    try {
+      const { userId } = req.params;
+      // Mock transaction history for now
+      const transactions = [
+        {
+          id: 1,
+          userId,
+          amount: 25,
+          type: 'earn',
+          action: 'BOOKING_COMPLETE',
+          description: 'Completed parking booking',
+          createdAt: new Date(Date.now() - 3600000).toISOString()
+        },
+        {
+          id: 2,
+          userId,
+          amount: 10,
+          type: 'earn', 
+          action: 'NAVIGATION_USE',
+          description: 'Used navigation to find parking',
+          createdAt: new Date(Date.now() - 7200000).toISOString()
+        }
+      ];
+      
+      res.json(transactions);
+    } catch (error) {
+      console.error('Error fetching transactions:', error);
+      res.status(500).json({ message: 'Failed to fetch transactions' });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }
