@@ -10,6 +10,7 @@ import { Car, Clock, MapPin, Calendar, Star, CheckCircle } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { db } from '@/lib/firebase';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { emailService } from '@/lib/emailjs';
 
 interface ValetBooking {
   userId: string;
@@ -76,6 +77,27 @@ export default function ValetService() {
       setBookingData({
         ...booking
       });
+
+      // Send email confirmations
+      if (user.email) {
+        try {
+          await emailService.sendValetConfirmation(
+            user.email,
+            user.displayName || 'Customer',
+            formData.destination,
+            formatDateTime(formData.pickupTime),
+            docRef.id
+          );
+          
+          await emailService.sendAdminNotification(
+            'Valet Service',
+            user.email,
+            `Destination: ${formData.destination}\nPickup Time: ${formatDateTime(formData.pickupTime)}\nNotes: ${formData.notes}`
+          );
+        } catch (error) {
+          console.error('Failed to send email confirmations:', error);
+        }
+      }
 
       // Reset form
       setFormData({

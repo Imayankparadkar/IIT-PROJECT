@@ -8,6 +8,7 @@ import ChallanChecker from '@/components/ChallanChecker';
 import ValetService from '@/components/ValetService';
 import FASTagServices from '@/components/FASTagServices';
 import VehicleMaintenance from '@/components/VehicleMaintenance';
+import EVStationFinder from '@/components/EVStationFinder';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -176,15 +177,7 @@ export default function ServicesPage() {
                 </TabsContent>
 
                 <TabsContent value="ev-stations" className="mt-6">
-                  <div className="text-center py-12">
-                    <Zap className="h-16 w-16 text-green-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">EV Charging Stations</h3>
-                    <p className="text-gray-600 mb-6">Find and book EV charging stations with live availability</p>
-                    <Button>
-                      <Navigation className="h-4 w-4 mr-2" />
-                      Find Nearby Stations
-                    </Button>
-                  </div>
+                  <EVStationFinder />
                 </TabsContent>
 
                 <TabsContent value="valet" className="mt-6">
