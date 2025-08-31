@@ -1,0 +1,205 @@
+1. Premium Valet Service
+
+UI flow
+
+Show short card: “Premium Valet Service — Professional valet parking and car care.”
+
+When user clicks Book Valet Service: first ask "Where do you want to go?" (text input or pick from saved addresses).
+
+After submit, show confirmation: “A valet representative from our office will contact you soon.” and show booking summary.
+
+Working backend
+
+Save booking to Firestore collection: valetBookings with fields:
+
+userId, destination, pickupTime, status: "requested", createdAt
+
+Trigger Firebase Function on create:
+
+Send email to immayankparadkar@gmail.com and user confirming booking (use Nodemailer or EmailJS as fallback).
+
+Optionally create a notification document notifications/{userId}.
+
+Example Firestore doc
+
+{
+  "userId":"uid_abc123",
+  "destination":"C21 Mall Indore",
+  "pickupTime":"2025-09-01T18:30:00.000Z",
+  "status":"requested",
+  "createdAt": "<timestamp>"
+}
+
+2. FASTag Services (Working)
+
+UI
+
+Cards/buttons: Check Balance, Recharge Now (amount input), Transaction History, Auto Recharge toggle.
+
+Working backend
+
+Firestore collection: fastag/{userId} doc structure:
+
+{
+  "balance": 1250,
+  "autoRecharge": false,
+  "transactions": [
+    {"id":"txn1","type":"recharge","amount":500,"date":"..."}
+  ]
+}
+
+
+Recharge flow:
+
+Accept recharge amount → create a transaction in transactions subcollection and update balance.
+
+Use a mock payment integration or Razorpay test keys for a working demo.
+
+Auto Recharge:
+
+Toggle saved to fastag/{userId}.autoRecharge. A Firebase Function can monitor balance and auto-trigger a recharge transaction if below threshold.
+
+3. Vehicle Maintenance (Working)
+
+UI
+
+Schedule Service form: service type (Oil Change, Battery, Wash), date/time, notes.
+
+Show “My Services” list with upcoming/past.
+
+Working backend
+
+Firestore collection: vehicleServices:
+
+{
+  "userId":"uid",
+  "serviceType":"Oil Change",
+  "scheduledAt":"2025-09-05T10:00:00Z",
+  "status":"scheduled",
+  "createdAt":"..."
+}
+
+
+On schedule: send confirmation email and add calendar-friendly data (iCal link) in email.
+
+4. Secure Document Storage (Working + Firebase)
+
+UI
+
+Document list showing Driving License, RC, PUC, Insurance with status Not Uploaded / Uploading... / Uploaded.
+
+Upload button opens file selector (PDF/JPG/PNG), limit 5MB. Show progress indicator and success state.
+
+Working backend
+
+Upload files to Firebase Storage under userDocs/{userId}/{docType}/{filename}.
+
+Save metadata in Firestore userDocs/{userId}/{docType}:
+
+{
+  "filename":"dl_mayank.pdf",
+  "url":"https://firebasestorage.googleapis.com/....",
+  "uploadedAt":"timestamp",
+  "status":"uploaded"
+}
+
+
+Security: Use Firebase Storage rules to allow only authenticated user to read/write their files.
+
+After upload completes, display Uploaded status in UI and send an upload confirmation email.
+
+5. Navigation to Parking (C21 Mall Indore) — Maps & Routing (Working)
+
+UI
+
+Display card with Distance 24.9 km, Duration 41 min, Slot A-04 Level 1, and a Start Navigation button.
+
+Show map with route and turn-by-turn list. Provide voice guidance (basic TTS).
+
+Working backend & map
+
+Use browser geolocation to get user current location (navigator.geolocation).
+
+Use MapmyIndia Directions API or Google Directions API to request route from current location → destination (C21 Mall Indore coordinates).
+
+Display route polyline on map, show markers (start/end), and populate the turn-by-turn steps list.
+
+Implement simple voice guidance by reading step.instructions using Web Speech API (speechSynthesis).
+
+Example steps flow
+
+Call Directions API: GET /directions?origin=lat,lng&destination=lat,lng
+
+Receive route with legs[].steps[] → render map + list.
+
+For voice guidance: call speechSynthesis.speak(new SpeechSynthesisUtterance(step.instruction)) when user taps Next or during auto-simulated navigation.
+
+6. EV Charging Stations — Routing (Working)
+
+UI
+
+Show nearby EV charging stations with live availability and price.
+
+On selecting a station, offer Route to station button and ETA/distance.
+
+Working backend
+
+Use a charging stations API (real or mocked). If no free live API available, seed Firestore evStations with sample data and keep an availability field you can change.
+
+Use same Directions API to route from current location to chosen station and display on map.
+
+Show pricing & live availability from evStations doc.
+
+7. Email Notifications (Working)
+
+On events (valet booking, FASTag recharge, maintenance scheduled, document uploaded) trigger Firebase Functions:
+
+Use Nodemailer with SMTP or a transactional email API (Resend/SendGrid/EmailJS).
+
+Send to immayankparadkar@gmail.com and to the user's email.
+
+Example function trigger: exports.onValetBooking = functions.firestore.document('valetBookings/{id}').onCreate((snap, ctx) => {...})
+
+8. Security & Rules
+
+Require Firebase Authentication for all flows.
+
+Firestore rules:
+
+Only allow users to read/write their own docs.
+
+Storage rules:
+
+Only authenticated user can upload/download files in userDocs/{userId}.
+
+9. UX Details & Edge Cases
+
+Show progress states for uploads (Uploading...).
+
+On upload success: change status to Uploaded and display upload date & thumbnail (if image).
+
+Show friendly error messages on failure (file too large, unsupported format, geolocation denied).
+
+If location permission denied, show fallback input for origin address.
+
+10. Deliverables (for hackathon-ready demo)
+
+React front-end (Vite or CRA) with components for each feature.
+
+Firebase setup (Firestore, Storage, Functions) with sample rules and deployable functions.
+
+Map integration (MapmyIndia or Google Maps) with routing demo.
+
+Example .env.example for API keys and email SMTP config.
+
+README with run & deploy steps and sample test accounts/data.
+
+Implementation notes (copy-paste)
+
+Firestore paths: valetBookings, fastag/{userId}, vehicleServices, userDocs/{userId}/{docType}, evStations.
+
+Directions: Use origin=current location from browser geolocation.
+
+Voice: Web Speech API for instructions.
+
+Email: Firebase Function + Nodemailer (SMTP) or use EmailJS for client-side fallback.
