@@ -34,7 +34,7 @@ export default function Navbar() {
                 <img 
                   src="/logo.png" 
                   alt="Park Sarthi Logo" 
-                  className="w-12 h-12 object-contain"
+                  className="w-16 h-16 object-contain"
                 />
                 <span className="text-xl font-bold text-primary">Park Sarthi</span>
               </div>
