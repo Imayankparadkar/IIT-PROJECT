@@ -20,10 +20,14 @@ export default function Footer() {
           {/* Company Info */}
           <div>
             <div className="flex items-center space-x-3 mb-4">
-              <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-parking text-white"></i>
-              </div>
-              <span className="text-xl font-bold">Park Sarthi</span>
+              <img 
+                src="/attached_assets/WhatsApp_Image_2025-08-31_at_01.12.54_10389c77-removebg-preview_1756606944259.png" 
+                alt="Park Sarthi Logo" 
+                className="w-8 h-8 object-contain"
+              />
+              <a href="/" className="text-xl font-bold hover:text-primary transition-colors cursor-pointer">
+                Park Sarthi
+              </a>
             </div>
             <p className="text-gray-400 mb-4">
               Your Spot, Just a Tap Away. Making parking simpler, faster, and stress-free.

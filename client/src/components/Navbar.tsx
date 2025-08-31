@@ -29,12 +29,16 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             {/* Logo */}
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 bg-primary rounded-lg flex items-center justify-center">
-                <i className="fas fa-parking text-white text-xl"></i>
+            <Link href="/">
+              <div className="flex items-center space-x-3 cursor-pointer">
+                <img 
+                  src="/attached_assets/WhatsApp_Image_2025-08-31_at_01.12.54_10389c77-removebg-preview_1756606944259.png" 
+                  alt="Park Sarthi Logo" 
+                  className="w-10 h-10 object-contain"
+                />
+                <span className="text-xl font-bold text-primary">Park Sarthi</span>
               </div>
-              <span className="text-xl font-bold text-primary">Park Sarthi</span>
-            </div>
+            </Link>
             
             {/* Navigation Links */}
             <div className="hidden md:flex items-center space-x-6">

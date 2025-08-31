@@ -4,6 +4,7 @@ import { z } from "zod";
 import { storage } from "./storage";
 import { insertBookingSchema, insertBusinessInquirySchema } from "@shared/schema";
 import { geminiService } from "./services/gemini.js";
+import contactRouter from "./api/contact";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Bookings endpoints
@@ -270,6 +271,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(500).json({ message: "Failed to fetch challan data" });
     }
   });
+
+  // Contact form endpoint
+  app.use("/api/contact", contactRouter);
 
   const httpServer = createServer(app);
   return httpServer;

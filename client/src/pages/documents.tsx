@@ -1,8 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { FileText, Upload, Eye, Trash2, Shield, Calendar } from 'lucide-react';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useToast } from '@/hooks/use-toast';
+import { storage } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL, deleteObject } from 'firebase/storage';
+import { FileText, Upload, Eye, Trash2, Shield, Calendar, X } from 'lucide-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 
@@ -13,6 +18,9 @@ interface Document {
   uploadDate: string;
   expiryDate: string;
   fileSize: string;
+  fileName?: string;
+  downloadURL?: string;
+  file?: File;
 }
 
 const generateRandomDocuments = (): Document[] => {
@@ -46,11 +54,61 @@ const generateRandomDocuments = (): Document[] => {
 
 export default function DocumentsPage() {
   const [documents, setDocuments] = useState<Document[]>([]);
+  const [uploading, setUploading] = useState<string | null>(null);
+  const [previewDoc, setPreviewDoc] = useState<Document | null>(null);
+  const [showPreview, setShowPreview] = useState(false);
+  const fileInputRefs = useRef<{ [key: string]: HTMLInputElement | null }>({});
+  const { toast } = useToast();
 
   useEffect(() => {
-    // Generate new dummy data on every visit for real-time effect
-    setDocuments(generateRandomDocuments());
+    // Load saved documents from localStorage
+    const savedDocs = localStorage.getItem('park-sarthi-documents');
+    if (savedDocs) {
+      setDocuments(JSON.parse(savedDocs));
+    } else {
+      // Initialize with empty documents
+      const initialDocs: Document[] = [
+        {
+          id: 'dl-1',
+          type: 'Driving License',
+          status: 'missing',
+          uploadDate: '',
+          expiryDate: '',
+          fileSize: ''
+        },
+        {
+          id: 'rc-1',
+          type: 'RC Certificate',
+          status: 'missing',
+          uploadDate: '',
+          expiryDate: '',
+          fileSize: ''
+        },
+        {
+          id: 'puc-1',
+          type: 'PUC Certificate',
+          status: 'missing',
+          uploadDate: '',
+          expiryDate: '',
+          fileSize: ''
+        },
+        {
+          id: 'ins-1',
+          type: 'Insurance',
+          status: 'missing',
+          uploadDate: '',
+          expiryDate: '',
+          fileSize: ''
+        }
+      ];
+      setDocuments(initialDocs);
+    }
   }, []);
+
+  // Save documents to localStorage whenever documents change
+  useEffect(() => {
+    localStorage.setItem('park-sarthi-documents', JSON.stringify(documents));
+  }, [documents]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -65,26 +123,124 @@ export default function DocumentsPage() {
     return <FileText className="h-5 w-5" />;
   };
 
-  const handleUpload = (docId: string) => {
-    // Simulate upload
-    setDocuments(docs => docs.map(doc => 
-      doc.id === docId 
-        ? { ...doc, status: 'uploaded' as const, uploadDate: new Date().toLocaleDateString('en-IN') }
-        : doc
-    ));
+  const handleFileSelect = (docId: string) => {
+    const input = fileInputRefs.current[docId];
+    input?.click();
+  };
+
+  const handleFileChange = async (docId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/png', 'image/jpg', 'application/pdf'];
+    if (!allowedTypes.includes(file.type)) {
+      toast({
+        title: "Invalid File Type",
+        description: "Please upload JPG, PNG, or PDF files only",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast({
+        title: "File Too Large",
+        description: "Please upload files smaller than 5MB",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setUploading(docId);
+
+    try {
+      // Upload to Firebase Storage
+      const storageRef = ref(storage, `documents/${docId}/${file.name}`);
+      const snapshot = await uploadBytes(storageRef, file);
+      const downloadURL = await getDownloadURL(snapshot.ref);
+
+      // Update document state
+      setDocuments(docs => docs.map(doc => 
+        doc.id === docId 
+          ? { 
+              ...doc, 
+              status: 'uploaded' as const, 
+              uploadDate: new Date().toLocaleDateString('en-IN'),
+              fileName: file.name,
+              fileSize: `${(file.size / 1024).toFixed(1)} KB`,
+              downloadURL,
+              // Set expiry date 1 year from now for demonstration
+              expiryDate: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString('en-IN')
+            }
+          : doc
+      ));
+
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} uploaded successfully`,
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      toast({
+        title: "Upload Failed",
+        description: "Failed to upload document. Please try again.",
+        variant: "destructive"
+      });
+    } finally {
+      setUploading(null);
+    }
   };
 
   const handlePreview = (doc: Document) => {
-    // Simulate opening document preview
-    alert(`Previewing ${doc.type} - Uploaded on ${doc.uploadDate}`);
+    if (doc.downloadURL) {
+      // Open in new tab for real preview
+      window.open(doc.downloadURL, '_blank');
+    } else {
+      setPreviewDoc(doc);
+      setShowPreview(true);
+    }
   };
 
-  const handleDelete = (docId: string) => {
-    setDocuments(docs => docs.map(doc => 
-      doc.id === docId 
-        ? { ...doc, status: 'missing' as const }
-        : doc
-    ));
+  const handleDelete = async (docId: string) => {
+    const doc = documents.find(d => d.id === docId);
+    if (!doc) return;
+
+    try {
+      // Delete from Firebase Storage if it exists
+      if (doc.downloadURL && doc.fileName) {
+        const storageRef = ref(storage, `documents/${docId}/${doc.fileName}`);
+        await deleteObject(storageRef);
+      }
+
+      // Update document state
+      setDocuments(docs => docs.map(d => 
+        d.id === docId 
+          ? { 
+              ...d, 
+              status: 'missing' as const,
+              fileName: undefined,
+              downloadURL: undefined,
+              uploadDate: '',
+              expiryDate: '',
+              fileSize: ''
+            }
+          : d
+      ));
+
+      toast({
+        title: "Document Deleted",
+        description: "Document removed successfully",
+      });
+    } catch (error) {
+      console.error('Delete error:', error);
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete document. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -121,6 +277,14 @@ export default function DocumentsPage() {
             {documents.map((doc) => (
               <Card key={doc.id} className="hover:shadow-lg transition-shadow">
                 <CardContent className="p-6">
+                  {/* Hidden file inputs */}
+                  <input
+                    ref={el => fileInputRefs.current[doc.id] = el}
+                    type="file"
+                    accept=".jpg,.jpeg,.png,.pdf"
+                    style={{ display: 'none' }}
+                    onChange={(e) => handleFileChange(doc.id, e)}
+                  />
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-4">
                       <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
@@ -164,21 +328,31 @@ export default function DocumentsPage() {
                           <Button
                             variant="outline"
                             size="sm"
+                            onClick={() => handleFileSelect(doc.id)}
+                            data-testid={`button-replace-${doc.type.toLowerCase().replace(' ', '-')}`}
+                          >
+                            <Upload className="h-4 w-4 mr-1" />
+                            Replace
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
                             onClick={() => handleDelete(doc.id)}
                             data-testid={`button-delete-${doc.type.toLowerCase().replace(' ', '-')}`}
                           >
                             <Trash2 className="h-4 w-4 mr-1" />
-                            Replace
+                            Delete
                           </Button>
                         </div>
                       ) : (
                         <Button
-                          onClick={() => handleUpload(doc.id)}
+                          onClick={() => handleFileSelect(doc.id)}
                           size="sm"
+                          disabled={uploading === doc.id}
                           data-testid={`button-upload-${doc.type.toLowerCase().replace(' ', '-')}`}
                         >
                           <Upload className="h-4 w-4 mr-1" />
-                          Upload Now
+                          {uploading === doc.id ? 'Uploading...' : 'Upload Now'}
                         </Button>
                       )}
                     </div>

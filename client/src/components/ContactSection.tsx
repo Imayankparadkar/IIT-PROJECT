@@ -29,15 +29,29 @@ export default function ContactSection() {
     setIsSubmitting(true);
 
     try {
-      // Simulate form submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast({
-        title: "Message Sent",
-        description: "Thank you for contacting us! We'll get back to you soon.",
+      // Send email via backend API
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          name: contactForm.name,
+          email: contactForm.email,
+          message: contactForm.message,
+          toEmail: 'immayankparadkar@gmail.com'
+        }),
       });
 
-      setContactForm({ name: '', email: '', message: '' });
+      if (response.ok) {
+        toast({
+          title: "Message Sent",
+          description: "Thank you for contacting us! We'll get back to you soon.",
+        });
+        setContactForm({ name: '', email: '', message: '' });
+      } else {
+        throw new Error('Failed to send message');
+      }
     } catch (error) {
       toast({
         title: "Error",
