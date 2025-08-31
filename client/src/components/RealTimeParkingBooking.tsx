@@ -9,6 +9,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
 import { mapplsService, ParkingLocation } from '@/lib/mappls';
+import { realtimeDbFunctions } from '@/lib/firebase';
 import MapDirections from './MapDirections';
 import { 
   Search, 

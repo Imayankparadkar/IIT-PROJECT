@@ -1,5 +1,7 @@
 // Use environment variable if available, fallback to provided key
-const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY || "cc616d4dd3986c77dbbb4b4abb266036";
+const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY;
+const MAPPLS_CLIENT_ID = import.meta.env.VITE_MAPPLS_CLIENT_ID;
+const MAPPLS_CLIENT_SECRET = import.meta.env.VITE_MAPPLS_CLIENT_SECRET;
 
 export interface Location {
   lat: number;
@@ -27,9 +29,16 @@ export interface EVStation extends Location {
 
 export class MapplsService {
   private apiKey: string;
+  private clientId: string;
+  private clientSecret: string;
+  private voiceEnabled: boolean = false;
+  private speechSynthesis: SpeechSynthesis | null = null;
 
   constructor() {
     this.apiKey = MAPPLS_API_KEY;
+    this.clientId = MAPPLS_CLIENT_ID;
+    this.clientSecret = MAPPLS_CLIENT_SECRET;
+    this.speechSynthesis = window.speechSynthesis || null;
   }
 
   // Initialize Mappls Map
@@ -268,6 +277,108 @@ export class MapplsService {
     });
   }
 
+  // Voice Navigation Features
+  enableVoiceNavigation() {
+    this.voiceEnabled = true;
+    if (this.speechSynthesis) {
+      console.log('Voice navigation enabled');
+    }
+  }
+
+  disableVoiceNavigation() {
+    this.voiceEnabled = false;
+    if (this.speechSynthesis) {
+      this.speechSynthesis.cancel();
+    }
+  }
+
+  private speak(text: string) {
+    if (!this.voiceEnabled || !this.speechSynthesis) return;
+    
+    this.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.rate = 0.9;
+    utterance.pitch = 1;
+    utterance.volume = 0.8;
+    this.speechSynthesis.speak(utterance);
+  }
+
+  // Get turn-by-turn directions with voice instructions
+  async getVoiceDirections(origin: Location, destination: Location) {
+    try {
+      const response = await fetch(`https://apis.mappls.com/advancedmaps/v1/${this.apiKey}/route_adv/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full&steps=true&voice_instructions=true`, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${this.apiKey}`
+        }
+      });
+      
+      if (!response.ok) {
+        throw new Error(`Failed to get voice directions: ${response.status}`);
+      }
+
+      const data = await response.json();
+      
+      // Process voice instructions
+      if (data.routes && data.routes[0] && data.routes[0].legs) {
+        const instructions = [];
+        for (const leg of data.routes[0].legs) {
+          if (leg.steps) {
+            for (const step of leg.steps) {
+              instructions.push({
+                instruction: step.maneuver?.instruction || step.name || 'Continue straight',
+                distance: step.distance,
+                duration: step.duration,
+                location: step.maneuver?.location || [step.geometry.coordinates[0]]
+              });
+            }
+          }
+        }
+        
+        // Start voice navigation if enabled
+        if (this.voiceEnabled && instructions.length > 0) {
+          this.speak(`Navigation started. ${instructions[0].instruction}`);
+        }
+        
+        return { ...data, voiceInstructions: instructions };
+      }
+      
+      return data;
+    } catch (error) {
+      console.error('Error getting voice directions:', error);
+      throw error;
+    }
+  }
+
+  // Search for places using MAPPLS API
+  async searchPlaces(query: string, location?: Location): Promise<any[]> {
+    try {
+      const baseUrl = `https://atlas.mappls.com/api/places/search/json`;
+      const params = new URLSearchParams({
+        query: query,
+        key: this.apiKey
+      });
+      
+      if (location) {
+        params.append('location', `${location.lat},${location.lng}`);
+        params.append('radius', '10000'); // 10km radius
+      }
+      
+      const response = await fetch(`${baseUrl}?${params}`);
+      
+      if (!response.ok) {
+        throw new Error(`Search failed: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      return data.suggestedLocations || [];
+    } catch (error) {
+      console.error('Error searching places:', error);
+      return [];
+    }
+  }
+
   private async loadMapplsSDK(): Promise<void> {
     return new Promise((resolve, reject) => {
       if ((window as any).mappls) {
@@ -276,7 +387,7 @@ export class MapplsService {
         return;
       }
 
-      console.log('Loading Mappls SDK...');
+      console.log('Loading Mappls SDK with new credentials...');
       
       // Create callback function
       const callbackName = 'mapplsCallback_' + Date.now();
@@ -288,8 +399,8 @@ export class MapplsService {
       };
 
       const script = document.createElement('script');
-      // Updated SDK URL format for new auth mechanism (Aug 2025) - access_token param
-      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&access_token=${this.apiKey}&callback=${callbackName}`;
+      // Use the proper Map SDK URL with API key
+      script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&callback=${callbackName}`;
       script.async = true;
       script.defer = true;
       

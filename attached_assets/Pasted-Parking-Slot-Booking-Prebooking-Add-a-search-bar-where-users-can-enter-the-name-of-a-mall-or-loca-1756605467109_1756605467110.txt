@@ -1,0 +1,91 @@
+Parking Slot Booking & Prebooking
+
+Add a search bar where users can enter the name of a mall or location.
+
+Display a list of malls with real-time parking slot availability, e.g.:
+
+C21 Mall → 12 slots
+
+Treasure Island → 3 slots
+
+Orbit Mall → Full
+
+Users can select an available slot.
+
+Reduce available slots dynamically after booking.
+
+Add a “Leaving in 10 min” button to simulate a slot becoming free.
+
+Prebooking: Users can book slots in advance. Prebooked slots reduce availability until canceled or expired.
+
+Show visual indicators: green = available, red = full.
+
+Implement wallet/points system for booking payments (use dummy wallet balance).
+
+Display notifications or alerts when slots are booked or freed.
+
+2. Mappls API Integration
+
+After selecting a slot, open Mappls navigation to show directions to the parking spot.
+
+Use dummy coordinates for malls initially.
+
+Implement voice navigation with turn-by-turn instructions.
+
+Ensure the map is responsive and works on mobile and desktop.
+
+3. Real-Time Simulation
+
+Use Realtime Database (Firebase or similar) to simulate slot updates across users.
+
+All users should see updated slot availability in real-time.
+
+4. Challan Checker
+
+Add a section where users can enter a vehicle number.
+
+Display dummy vehicle details:
+
+Vehicle Number
+
+Owner Name
+
+Pending Challan Amount
+
+Violation Location
+
+Include a “Get Details & Location” button.
+
+Example dummy data:
+
+"MH12AB1234" → John Doe, ₹500, Pune XYZ Street
+
+"MH14CD5678" → Jane Smith, ₹1000, Pune ABC Street
+
+Use React state for input/output.
+
+Show results in a clean, responsive card layout.
+
+5. UI/UX Requirements
+
+All interfaces must be interactive and responsive.
+
+Include real-time slot updates, alerts, and dynamic visuals for booking/free slots.
+
+Use dummy data so the system is fully demo-ready.
+
+6. Implementation Notes
+
+Provide React components for all features:
+
+Parking Slot Booking & Prebooking
+
+Wallet/Points System
+
+Mappls API Navigation (voice)
+
+Challan Checker
+
+Ensure the code is ready to integrate into an existing project.
+
+Use dummy data for demonstration, but the structure should support future integration with APIs and live databases.

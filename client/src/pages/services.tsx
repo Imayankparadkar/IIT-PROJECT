@@ -1,205 +1,292 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Calendar, Clock, CheckCircle, AlertCircle, Wrench, Battery, Car, Droplets } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import RealTimeParkingBooking from '@/components/RealTimeParkingBooking';
+import ChallanChecker from '@/components/ChallanChecker';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
-interface ServiceRecord {
-  id: string;
-  type: 'Oil Change' | 'Battery Service' | 'Car Wash' | 'General Service';
-  status: 'completed' | 'scheduled' | 'pending';
-  date: string;
-  time: string;
-  location: string;
-  cost: number;
-}
-
-const generateRandomServices = (): ServiceRecord[] => {
-  const services = [
-    { type: 'Oil Change' as const, cost: 800 },
-    { type: 'Battery Service' as const, cost: 1200 },
-    { type: 'Car Wash' as const, cost: 300 },
-    { type: 'General Service' as const, cost: 2500 }
-  ];
-
-  const statuses = ['completed', 'scheduled', 'pending'] as const;
-  const locations = ['Parking Zone A', 'Mall Parking B3', 'Office Complex C1', 'Airport Terminal 2'];
-  
-  return services.map((service, index) => {
-    const randomDays = Math.floor(Math.random() * 60) - 30; // -30 to +30 days
-    const date = new Date();
-    date.setDate(date.getDate() + randomDays);
-    
-    return {
-      id: `service-${index}-${Date.now()}`,
-      type: service.type,
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      date: date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }),
-      time: `${Math.floor(Math.random() * 12) + 1}:${Math.random() > 0.5 ? '00' : '30'} ${Math.random() > 0.5 ? 'AM' : 'PM'}`,
-      location: locations[Math.floor(Math.random() * locations.length)],
-      cost: service.cost + Math.floor(Math.random() * 200) - 100
-    };
-  });
-};
+import { 
+  Car, 
+  MapPin, 
+  Clock, 
+  Shield, 
+  Zap, 
+  Wrench, 
+  CreditCard,
+  FileText,
+  Phone,
+  Star,
+  AlertTriangle,
+  Navigation,
+  Search,
+  Wallet,
+  Calendar
+} from 'lucide-react';
 
 export default function ServicesPage() {
-  const [services, setServices] = useState<ServiceRecord[]>([]);
+  const [activeTab, setActiveTab] = useState('parking');
 
-  useEffect(() => {
-    // Generate new dummy data on every visit for real-time effect
-    setServices(generateRandomServices());
-  }, []);
-
-  const getServiceIcon = (type: string) => {
-    switch (type) {
-      case 'Oil Change': return <Droplets className="h-5 w-5" />;
-      case 'Battery Service': return <Battery className="h-5 w-5" />;
-      case 'Car Wash': return <Car className="h-5 w-5" />;
-      case 'General Service': return <Wrench className="h-5 w-5" />;
-      default: return <Wrench className="h-5 w-5" />;
+  const services = [
+    {
+      id: 'parking',
+      title: 'Smart Parking',
+      icon: <Car className="h-6 w-6" />,
+      description: 'Find and book parking slots in real-time across Indore',
+      features: ['Real-time availability', 'Pre-booking', 'Voice navigation', 'Slot search'],
+      color: 'bg-blue-500'
+    },
+    {
+      id: 'challan',
+      title: 'Challan Checker',
+      icon: <AlertTriangle className="h-6 w-6" />,
+      description: 'Check traffic violations and pay challans online',
+      features: ['Instant lookup', 'Online payment', 'Location mapping', 'History tracking'],
+      color: 'bg-red-500'
+    },
+    {
+      id: 'ev-stations',
+      title: 'EV Charging',
+      icon: <Zap className="h-6 w-6" />,
+      description: 'Locate and book EV charging stations with real-time status',
+      features: ['Live availability', 'Price comparison', 'Booking system', 'Route planning'],
+      color: 'bg-green-500'
+    },
+    {
+      id: 'valet',
+      title: 'Valet Service',
+      icon: <Shield className="h-6 w-6" />,
+      description: 'Premium valet parking and car care services',
+      features: ['Professional service', 'Car care', 'Secure parking', 'Priority access'],
+      color: 'bg-purple-500'
+    },
+    {
+      id: 'fastag',
+      title: 'FASTag Services',
+      icon: <CreditCard className="h-6 w-6" />,
+      description: 'FASTag recharge and management services',
+      features: ['Quick recharge', 'Balance check', 'Transaction history', 'Auto-recharge'],
+      color: 'bg-orange-500'
+    },
+    {
+      id: 'maintenance',
+      title: 'Vehicle Maintenance',
+      icon: <Wrench className="h-6 w-6" />,
+      description: 'Schedule and track vehicle maintenance services',
+      features: ['Service booking', 'Reminder alerts', 'Service history', 'Quality assured'],
+      color: 'bg-gray-500'
     }
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return 'bg-green-100 text-green-800';
-      case 'scheduled': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
-  };
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case 'completed': return <CheckCircle className="h-4 w-4" />;
-      case 'scheduled': return <Calendar className="h-4 w-4" />;
-      case 'pending': return <AlertCircle className="h-4 w-4" />;
-      default: return <Clock className="h-4 w-4" />;
-    }
-  };
+  ];
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       <Navbar />
       
-      <div className="pt-20 pb-16">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="pt-20 pb-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header */}
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">
-              Car & Bike Services
+              Comprehensive Parking Services
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Complete vehicle services at your parking location. Track your service history and schedule new appointments.
+              Your one-stop solution for smart parking, traffic management, and vehicle services in Indore
             </p>
           </div>
 
-          {/* Service Categories */}
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Droplets className="h-8 w-8 text-blue-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Oil Change</h3>
-                <p className="text-gray-600 text-sm mb-4">Engine oil & filter replacement</p>
-                <Button size="sm" data-testid="button-book-oil-change">Book Now</Button>
+          {/* Service Cards Overview */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-12">
+            {services.map((service) => (
+              <Card 
+                key={service.id}
+                className="hover:shadow-lg transition-shadow cursor-pointer"
+                onClick={() => setActiveTab(service.id)}
+              >
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${service.color} text-white`}>
+                      {service.icon}
+                    </div>
+                    {service.title}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-gray-600 mb-4">{service.description}</p>
+                  <div className="space-y-2">
+                    {service.features.map((feature, index) => (
+                      <div key={index} className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                        <span className="text-sm text-gray-700">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <Button 
+                    className="w-full mt-4" 
+                    variant={activeTab === service.id ? "default" : "outline"}
+                    onClick={() => setActiveTab(service.id)}
+                  >
+                    {activeTab === service.id ? 'Currently Active' : 'Access Service'}
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {/* Main Service Interface */}
+          <Card className="mb-12">
+            <CardHeader>
+              <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                <TabsList className="grid w-full grid-cols-2 lg:grid-cols-6">
+                  <TabsTrigger value="parking" className="flex items-center gap-2">
+                    <Car className="h-4 w-4" />
+                    <span className="hidden sm:inline">Parking</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="challan" className="flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span className="hidden sm:inline">Challan</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="ev-stations" className="flex items-center gap-2">
+                    <Zap className="h-4 w-4" />
+                    <span className="hidden sm:inline">EV Stations</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="valet" className="flex items-center gap-2">
+                    <Shield className="h-4 w-4" />
+                    <span className="hidden sm:inline">Valet</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="fastag" className="flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" />
+                    <span className="hidden sm:inline">FASTag</span>
+                  </TabsTrigger>
+                  <TabsTrigger value="maintenance" className="flex items-center gap-2">
+                    <Wrench className="h-4 w-4" />
+                    <span className="hidden sm:inline">Maintenance</span>
+                  </TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="parking" className="mt-6">
+                  <RealTimeParkingBooking />
+                </TabsContent>
+
+                <TabsContent value="challan" className="mt-6">
+                  <ChallanChecker />
+                </TabsContent>
+
+                <TabsContent value="ev-stations" className="mt-6">
+                  <div className="text-center py-12">
+                    <Zap className="h-16 w-16 text-green-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">EV Charging Stations</h3>
+                    <p className="text-gray-600 mb-6">Find and book EV charging stations with live availability</p>
+                    <Button>
+                      <Navigation className="h-4 w-4 mr-2" />
+                      Find Nearby Stations
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="valet" className="mt-6">
+                  <div className="text-center py-12">
+                    <Shield className="h-16 w-16 text-purple-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Premium Valet Service</h3>
+                    <p className="text-gray-600 mb-6">Professional valet parking and car care services</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
+                          <h4 className="font-semibold">Professional Staff</h4>
+                          <p className="text-sm text-gray-600">Trained and certified valet professionals</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Shield className="h-8 w-8 text-blue-500 mx-auto mb-2" />
+                          <h4 className="font-semibold">Secure Parking</h4>
+                          <p className="text-sm text-gray-600">CCTV monitored secure parking areas</p>
+                        </CardContent>
+                      </Card>
+                      <Card>
+                        <CardContent className="p-4 text-center">
+                          <Wrench className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                          <h4 className="font-semibold">Car Care</h4>
+                          <p className="text-sm text-gray-600">Basic car care and maintenance services</p>
+                        </CardContent>
+                      </Card>
+                    </div>
+                    <Button>
+                      <Phone className="h-4 w-4 mr-2" />
+                      Book Valet Service
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="fastag" className="mt-6">
+                  <div className="text-center py-12">
+                    <CreditCard className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">FASTag Services</h3>
+                    <p className="text-gray-600 mb-6">Manage your FASTag account and recharge services</p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto mb-6">
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <Wallet className="h-6 w-6" />
+                        <span>Check Balance</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <CreditCard className="h-6 w-6" />
+                        <span>Recharge Now</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <FileText className="h-6 w-6" />
+                        <span>Transaction History</span>
+                      </Button>
+                      <Button variant="outline" className="h-20 flex flex-col gap-2">
+                        <Clock className="h-6 w-6" />
+                        <span>Auto Recharge</span>
+                      </Button>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="maintenance" className="mt-6">
+                  <div className="text-center py-12">
+                    <Wrench className="h-16 w-16 text-gray-500 mx-auto mb-4" />
+                    <h3 className="text-xl font-semibold mb-2">Vehicle Maintenance</h3>
+                    <p className="text-gray-600 mb-6">Schedule and track your vehicle maintenance services</p>
+                    <Button>
+                      <Calendar className="h-4 w-4 mr-2" />
+                      Schedule Service
+                    </Button>
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </CardHeader>
+          </Card>
+
+          {/* Statistics and Info */}
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-blue-600 mb-2">1000+</div>
+                <div className="text-gray-600">Parking Slots</div>
               </CardContent>
             </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Battery className="h-8 w-8 text-green-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Battery Service</h3>
-                <p className="text-gray-600 text-sm mb-4">Battery check & replacement</p>
-                <Button size="sm" data-testid="button-book-battery">Book Now</Button>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-green-600 mb-2">50+</div>
+                <div className="text-gray-600">EV Charging Points</div>
               </CardContent>
             </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Wrench className="h-8 w-8 text-purple-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">General Service</h3>
-                <p className="text-gray-600 text-sm mb-4">Complete vehicle checkup</p>
-                <Button size="sm" data-testid="button-book-service">Book Now</Button>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-purple-600 mb-2">24/7</div>
+                <div className="text-gray-600">Service Available</div>
               </CardContent>
             </Card>
-
-            <Card className="text-center hover:shadow-lg transition-shadow">
-              <CardContent className="p-6">
-                <div className="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <Car className="h-8 w-8 text-yellow-600" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Car Wash</h3>
-                <p className="text-gray-600 text-sm mb-4">Interior & exterior cleaning</p>
-                <Button size="sm" data-testid="button-book-wash">Book Now</Button>
+            <Card>
+              <CardContent className="p-6 text-center">
+                <div className="text-3xl font-bold text-orange-600 mb-2">98%</div>
+                <div className="text-gray-600">Customer Satisfaction</div>
               </CardContent>
             </Card>
           </div>
-
-          {/* Service History Dashboard */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Clock className="h-5 w-5" />
-                Service History Dashboard
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {services.map((service) => (
-                  <div
-                    key={service.id}
-                    className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                    data-testid={`service-record-${service.id}`}
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        {getServiceIcon(service.type)}
-                        <span className="font-medium">{service.type}</span>
-                      </div>
-                      
-                      <Badge className={getStatusColor(service.status)}>
-                        <span className="flex items-center gap-1">
-                          {getStatusIcon(service.status)}
-                          {service.status.charAt(0).toUpperCase() + service.status.slice(1)}
-                        </span>
-                      </Badge>
-                    </div>
-
-                    <div className="text-right text-sm text-gray-600">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Calendar className="h-3 w-3" />
-                        {service.date} at {service.time}
-                      </div>
-                      <div className="font-medium text-gray-900">
-                        ₹{service.cost.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-gray-500">
-                        {service.location}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-                <h3 className="text-lg font-semibold mb-3">Quick Service Booking</h3>
-                <p className="text-gray-600 mb-4">
-                  Book your next service appointment and get it done right at your parking spot.
-                </p>
-                <Button className="w-full md:w-auto" data-testid="button-book-new-service">
-                  Schedule New Service
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
         </div>
       </div>
 

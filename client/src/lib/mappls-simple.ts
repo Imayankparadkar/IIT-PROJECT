@@ -1,6 +1,8 @@
 import { Location } from './mappls';
 
-const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY || "cc616d4dd3986c77dbbb4b4abb266036";
+const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY;
+const MAPPLS_CLIENT_ID = import.meta.env.VITE_MAPPLS_CLIENT_ID;
+const MAPPLS_CLIENT_SECRET = import.meta.env.VITE_MAPPLS_CLIENT_SECRET;
 
 export class SimpleMappls {
   private apiKey: string;
