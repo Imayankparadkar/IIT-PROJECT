@@ -1,7 +1,7 @@
-// Use environment variable if available, fallback to provided key
-const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY;
-const MAPPLS_CLIENT_ID = import.meta.env.VITE_MAPPLS_CLIENT_ID;
-const MAPPLS_CLIENT_SECRET = import.meta.env.VITE_MAPPLS_CLIENT_SECRET;
+// Use the new Mappls credentials
+const MAPPLS_API_KEY = "cc616d4dd3986c77dbbb4b4abb266036";
+const MAPPLS_CLIENT_ID = "96dHZVzsAutdNswadDkWPI7wyyGvGWu_YsAfJFZspKvCGV9FdfV-m03yx0mhVCRDIzQEZDg9ZemVpiIu3rhNkw==";
+const MAPPLS_CLIENT_SECRET = "lrFxI-iSEg9-LMYnQh-8fR3Yce7y2MYbMBqeEnAQ562lDmeC8CVMEfpEo4M2ThPOf8rZbTc1E6JDR026JZD39OIuxjiPEyqI";
 
 export interface Location {
   lat: number;

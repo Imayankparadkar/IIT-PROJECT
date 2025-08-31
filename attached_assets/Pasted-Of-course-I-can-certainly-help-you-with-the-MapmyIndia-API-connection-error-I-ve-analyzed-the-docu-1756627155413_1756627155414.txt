@@ -1,0 +1,47 @@
+Of course! I can certainly help you with the MapmyIndia API connection error. I've analyzed the documentation snippet you provided and your mapmyindia.ts file.
+
+The error you're encountering is likely due to one of two common issues: your API key configuration or a discrepancy in how the SDK script is being loaded in your code.
+
+1. API Key and Domain Whitelisting
+Your own code in mapmyindia.ts has an excellent error handler that points to the most common reasons for the SDK failing to load. It's a great practice to have such descriptive error messages! It's worth double-checking these points first:
+
+Is it the right type of key? As the documentation you're using is for the Web (JavaScript) SDK, you must use a key from your Mappls dashboard that is designated as a "JS SDK Key" or "Map Load Key". A "REST API key" will not work for loading the map on your website.
+Is your domain whitelisted? For the key to work, you must add your development domain (like localhost or your preview URL) to the 'Allowed Referrers' list for that specific key in your Mappls dashboard.
+The error message in your code is very clear about this:
+
+"Failed to load Mappls SDK. This is almost always caused by an issue with your API key configuration in the Mappls dashboard. Please check the following:\n1. The key in your .env file is a 'JS SDK Key' or 'Map Load Key', not a REST API key.\n2. Your development domain (e.g., 'localhost') is whitelisted in the 'Allowed Referrers' for that key."
+
+If you've confirmed these settings are correct, the issue likely lies in the code itself.
+
+2. SDK Script URL Mismatch
+I noticed a difference between the official Mappls documentation you provided and how the SDK script URL is constructed in your loadMapMyIndiaSdk function.
+
+The documentation specifies the URL should look like this: <script src="https://apis.mappls.com/advancedmaps/api/<YOUR_KEY_OR_TOKEN>/map_sdk?v=3.0&layer=vector"></script>
+
+Your code, however, generates this URL: https://apis.mappls.com/advancedmaps/api/${apiKey}/map_sdk.js
+
+There are two key differences:
+
+Your code adds a .js extension to map_sdk, which is not present in the documentation.
+Your code is missing the required query parameters ?v=3.0&layer=vector. These are important for specifying the SDK version and the map tile type.
+This mismatch can cause the SDK to fail to load or behave unexpectedly.
+
+Suggested Code Change
+To resolve this, you should update the scriptUrl in c:\Users\ASUS\Desktop\rahul\hackathone\SafeWayAI\client\src\lib\mapmyindia.ts to match the documentation. Here is the suggested change:
+
+mapmyindia.ts
+-1
++1
+ Show full code block 
+    document.head.appendChild(cssLink);
+
+    const script = document.createElement('script');
+    const scriptUrl = https://apis.mappls.com/advancedmaps/api/${apiKey}/map_sdk.js;
+    const scriptUrl = https://apis.mappls.com/advancedmaps/api/${apiKey}/map_sdk?layer=vector&v=3.0;
+    console.log('Attempting to load Mappls SDK from:', scriptUrl);
+    script.src = scriptUrl;
+    script.async = true;
+
+By making this change, you'll be loading the correct version of the Mappls SDK with the specified vector layer, which should resolve the connection error, assuming your API key is configured correctly in the Mappls dashboard.
+
+I hope this helps you get your map up and running! Let me know if you have any other questions.
