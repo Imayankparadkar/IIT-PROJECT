@@ -37,41 +37,43 @@ export default function Navbar() {
             </div>
             
             {/* Navigation Links */}
-            <div className="hidden md:flex items-center space-x-8">
-              <button 
-                onClick={() => scrollToSection('about')}
-                className="text-muted-foreground hover:text-primary transition-colors"
-                data-testid="nav-about"
-              >
-                About
-              </button>
-              <button 
-                onClick={() => scrollToSection('products')}
-                className="text-muted-foreground hover:text-primary transition-colors"
-                data-testid="nav-products"
-              >
-                Products
-              </button>
-              <Link href="/vehicle-details">
+            <div className="hidden md:flex items-center space-x-6">
+              <Link href="/dashboard">
                 <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
-                      data-testid="nav-vehicle-details">
-                  Vehicle Details
+                      data-testid="nav-dashboard">
+                  Dashboard
                 </span>
               </Link>
-              <button 
-                onClick={() => scrollToSection('business')}
-                className="text-muted-foreground hover:text-primary transition-colors"
-                data-testid="nav-business"
-              >
-                For Business
-              </button>
-              <button 
-                onClick={() => scrollToSection('contact')}
-                className="text-muted-foreground hover:text-primary transition-colors"
-                data-testid="nav-contact"
-              >
-                Contact
-              </button>
+              <Link href="/services">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-services">
+                  Services
+                </span>
+              </Link>
+              <Link href="/documents">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-documents">
+                  Documents
+                </span>
+              </Link>
+              <Link href="/ev-stations">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-ev-stations">
+                  EV Stations
+                </span>
+              </Link>
+              <Link href="/profile">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-profile">
+                  Profile
+                </span>
+              </Link>
+              <Link href="/support">
+                <span className="text-muted-foreground hover:text-primary transition-colors cursor-pointer"
+                      data-testid="nav-support">
+                  Support
+                </span>
+              </Link>
             </div>
             
             {/* Wallet & Auth */}

@@ -1,0 +1,111 @@
+You are an expert full-stack developer & UI/UX designer. Build me a complete, modern, responsive website for my project (similar UI/UX to Park+
+).
+
+General Requirements:
+
+Clean, professional design (no emojis).
+
+Fully responsive (mobile, tablet, desktop).
+
+All features should have separate inner pages (not redirected back to homepage).
+
+Use dummy but realistic data that updates dynamically each time (for real-time effect).
+
+Integrate Mappls Maps SDK for map & navigation features.
+
+Add images/icons where needed (professional style).
+
+Keep UI consistent with Park+ design style.
+
+Pages & Features:
+1. Car & Bike Services
+
+Complete vehicle services at user’s parking location.
+
+Homepage Section:
+
+Oil Change
+
+Battery
+
+Service
+
+Wash
+
+Inner Page (Service History Dashboard):
+
+Show upcoming & past services with date, time, status.
+
+Example Dummy Data:
+
+Oil Change → Done on 12 Aug 2025
+
+Battery Service → Scheduled for 10 Sep 2025
+
+Car Wash → Pending (Next on 15 Sep 2025)
+
+Data should refresh/change on reload for real-time effect.
+
+2. Secure Document Storage
+
+Store & manage all important vehicle documents digitally.
+
+Homepage Section:
+
+Driving License
+
+RC Certificate
+
+PUC Certificate
+
+Inner Page (Document Manager):
+
+Upload documents (dummy upload system).
+
+Preview documents when clicked (sample images of DL, RC, PUC).
+
+Option to manage/delete documents.
+
+Example:
+
+Driving License → Uploaded (View / Replace)
+
+RC Certificate → Uploaded (View / Replace)
+
+PUC Certificate → Not Uploaded (Upload Now)
+
+3. EV Station Finder
+
+Find nearest charging stations in real-time.
+
+Homepage Section (Example Data):
+
+Tata Power – 0.5 km → 4 ports available → ₹8/kWh
+
+BPCL – 1.2 km → 2 ports available → ₹7/kWh
+
+[Button] Navigate to Station
+
+Inner Page (EV Map Page):
+
+Show Mappls Map with nearest charging stations marked.
+
+Clicking a station → Show details (price, ports, availability).
+
+Add Voice Navigation option (dummy button triggering audio guide).
+
+Additional Pages (Enhancements for User Experience):
+
+Dashboard (Overview Page)
+
+Shows quick summary of services, documents, and EV charging status.
+
+User Profile Page
+
+Basic user info (name, phone, vehicle details).
+
+Option to edit/update.
+
+Support / Help Page
+
+FAQs + Contact Support form.
