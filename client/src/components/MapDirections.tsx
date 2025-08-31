@@ -90,16 +90,7 @@ export default function MapDirections({
       setLocationStatus('Using default location');
       // Create fallback static map
       if (mapContainer.current) {
-        mapContainer.current.innerHTML = `
-          <div class="w-full h-full bg-blue-50 border border-blue-200 rounded-lg flex items-center justify-center">
-            <div class="text-center p-6">
-              <div class="text-blue-600 mb-2">📍</div>
-              <p class="text-blue-800 font-medium">${destinationName}</p>
-              <p class="text-blue-600 text-sm">${destination.address || 'View location in external app'}</p>
-              <div class="mt-3 text-xs text-gray-500">Tap navigation buttons below for directions</div>
-            </div>
-          </div>
-        `;
+        simpleMappls.createEnhancedFallbackMap(mapContainer.current, destination, userLocation || undefined);
         setRouteInfo({
           distance: 'Use external navigation',
           duration: 'for accurate directions'
