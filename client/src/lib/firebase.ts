@@ -19,7 +19,15 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 export const storage = getStorage(app);
-export const realtimeDb = getDatabase(app);
+
+// Initialize Realtime Database conditionally
+let realtimeDb: any = null;
+try {
+  realtimeDb = getDatabase(app);
+} catch (error) {
+  console.warn('Realtime Database not initialized:', error);
+}
+export { realtimeDb };
 
 // Email/Password Authentication Functions
 export const registerWithEmail = async (email: string, password: string) => {
