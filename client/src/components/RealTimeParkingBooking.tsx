@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { useToast } from '@/hooks/use-toast';
@@ -390,6 +390,7 @@ export default function RealTimeParkingBooking() {
               <Car className="h-5 w-5" />
               Select Parking Slot - {selectedMall?.name}
             </DialogTitle>
+            <DialogDescription>Choose your preferred parking slot from the available options</DialogDescription>
           </DialogHeader>
           
           {selectedMall && (
@@ -522,6 +523,7 @@ export default function RealTimeParkingBooking() {
               <Navigation className="h-5 w-5" />
               Navigation to {selectedMall?.name}
             </DialogTitle>
+            <DialogDescription>Your booking is confirmed. Get directions to your reserved parking slot</DialogDescription>
           </DialogHeader>
           
           <div className="space-y-4">

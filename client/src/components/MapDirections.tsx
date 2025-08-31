@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { mapplsService, Location } from '@/lib/mappls';
@@ -187,6 +187,7 @@ export default function MapDirections({
             <Navigation className="h-5 w-5" />
             Directions to {destinationName}
           </DialogTitle>
+          <DialogDescription>View route details and get turn-by-turn navigation to your destination</DialogDescription>
         </DialogHeader>
 
         <div className="space-y-4">

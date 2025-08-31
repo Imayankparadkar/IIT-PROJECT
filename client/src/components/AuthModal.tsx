@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -85,11 +85,9 @@ export default function AuthModal({ isOpen, onClose, mode }: AuthModalProps) {
             </div>
             Welcome to Park Sarthi
           </DialogTitle>
-          <div className="text-center">
-            <p className="text-gray-600 font-normal">
-              Smart parking management made simple
-            </p>
-          </div>
+          <DialogDescription className="text-center text-gray-600 font-normal">
+            Smart parking management made simple
+          </DialogDescription>
         </DialogHeader>
 
         <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as 'login' | 'signup')}>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -131,6 +131,11 @@ export default function BookingModal({ isOpen, onClose }: BookingModalProps) {
             {step === 'form' && <h3 className="text-2xl font-bold text-gray-900 mb-2">{bookingType === 'pre' ? 'Pre-Book' : 'Quick Book'} Parking</h3>}
             {step === 'confirmation' && <h3 className="text-2xl font-bold text-green-600 mb-2">Booking Confirmed!</h3>}
           </DialogTitle>
+          <DialogDescription className="text-center text-gray-600">
+            {step === 'select' && 'Choose your preferred booking type to secure your parking spot'}
+            {step === 'form' && 'Complete your booking details to reserve your parking space'}
+            {step === 'confirmation' && 'Your parking spot has been successfully reserved'}
+          </DialogDescription>
         </DialogHeader>
 
         {step === 'select' && (

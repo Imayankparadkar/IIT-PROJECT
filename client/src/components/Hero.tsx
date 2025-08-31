@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { useAuth } from '@/hooks/useAuth';
 import { useToast } from '@/hooks/use-toast';
 import AuthModal from '@/components/AuthModal';
@@ -161,6 +161,7 @@ export default function Hero() {
         <DialogContent className="max-w-6xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Vehicle Details & Challan Information</DialogTitle>
+            <DialogDescription>Access comprehensive vehicle information and outstanding traffic challans</DialogDescription>
           </DialogHeader>
           <VehicleDetails 
             showInModal={true}
