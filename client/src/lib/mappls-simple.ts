@@ -98,8 +98,18 @@ export class SimpleMappls {
       mapDiv.style.width = '100%';
       mapDiv.style.height = '100%';
       mapDiv.style.borderRadius = '8px';
+      mapDiv.style.position = 'relative';
+      mapDiv.style.overflow = 'hidden';
       mapDiv.id = `map_${Date.now()}`;
       container.appendChild(mapDiv);
+
+      // Add Mappls CSS if not already present
+      if (!document.querySelector('link[href*="mappls"]')) {
+        const link = document.createElement('link');
+        link.rel = 'stylesheet';
+        link.href = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector`;
+        document.head.appendChild(link);
+      }
 
       console.log('Creating Mappls map instance...');
 
@@ -113,48 +123,66 @@ export class SimpleMappls {
           
           const map = new (window as any).mappls.Map(mapDiv.id, {
             center: center,
-            zoom: origin ? 12 : 15
+            zoom: origin ? 12 : 15,
+            style: 'standard',
+            doubleClickZoom: true,
+            dragPan: true,
+            scrollZoom: true,
+            touchZoom: true
           });
 
           console.log('Map instance created successfully');
 
-          // Add markers immediately (don't wait for load event)
-          setTimeout(() => {
+          // Wait for map to be fully ready before adding markers
+          const addMarkersWhenReady = () => {
             try {
-              console.log('Adding markers to map...');
+              // Check if map is ready by testing a basic method
+              if (map && map.getCenter) {
+                console.log('Map is ready, adding markers...');
 
-              // Add destination marker
-              const destinationMarker = new (window as any).mappls.Marker({
-                color: '#ef4444'
-              }).setLngLat([destination.lng, destination.lat]).addTo(map);
+                // Add destination marker
+                const destinationMarker = new (window as any).mappls.Marker({
+                  color: 'red'
+                }).setLngLat([destination.lng, destination.lat]);
+                
+                destinationMarker.addTo(map);
+                console.log('Destination marker added');
 
-              console.log('Destination marker added');
+                // Add origin marker if available
+                if (origin) {
+                  const originMarker = new (window as any).mappls.Marker({
+                    color: 'green'
+                  }).setLngLat([origin.lng, origin.lat]);
+                  
+                  originMarker.addTo(map);
+                  console.log('Origin marker added');
 
-              // Add origin marker if available
-              if (origin) {
-                const originMarker = new (window as any).mappls.Marker({
-                  color: '#22c55e'
-                }).setLngLat([origin.lng, origin.lat]).addTo(map);
-
-                console.log('Origin marker added');
-
-                // Fit bounds to show both points
-                try {
-                  const bounds = new (window as any).mappls.LngLatBounds();
-                  bounds.extend([origin.lng, origin.lat]);
-                  bounds.extend([destination.lng, destination.lat]);
-                  map.fitBounds(bounds, { padding: 50 });
-                  console.log('Map bounds set successfully');
-                } catch (boundsError) {
-                  console.log('Could not set bounds, using default zoom');
+                  // Fit bounds to show both points
+                  try {
+                    const bounds = new (window as any).mappls.LngLatBounds();
+                    bounds.extend([origin.lng, origin.lat]);
+                    bounds.extend([destination.lng, destination.lat]);
+                    map.fitBounds(bounds, { padding: 50 });
+                    console.log('Map bounds set successfully');
+                  } catch (boundsError) {
+                    console.log('Could not set bounds, using default zoom');
+                  }
                 }
-              }
 
-              console.log('Interactive map setup completed successfully');
+                console.log('Interactive map setup completed successfully');
+              } else {
+                console.log('Map not ready yet, waiting...');
+                setTimeout(addMarkersWhenReady, 200);
+              }
             } catch (markerError) {
               console.error('Error adding markers:', markerError);
+              // Try again after a short delay
+              setTimeout(addMarkersWhenReady, 500);
             }
-          }, 500);
+          };
+
+          // Start checking for map readiness
+          setTimeout(addMarkersWhenReady, 1000);
 
           // Handle map errors
           if (map.on) {
