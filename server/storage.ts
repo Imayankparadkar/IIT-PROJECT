@@ -142,6 +142,8 @@ export class MemStorage implements IStorage {
 
   // User operations
   async getUser(id: string): Promise<User | undefined> {
+    console.log(`Looking for user with ID: ${id}, Map has: ${this.users.has(id)}, Total users: ${this.users.size}`);
+    console.log('Available user IDs:', Array.from(this.users.keys()));
     return this.users.get(id);
   }
 
@@ -150,10 +152,13 @@ export class MemStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
-    const id = randomUUID();
+    // Use Firebase UID as the user ID for consistency  
+    const id = insertUser.firebaseUid || randomUUID();
     const user: User = {
-      ...insertUser,
       id,
+      firebaseUid: insertUser.firebaseUid || null,
+      email: insertUser.email,
+      password: insertUser.password,
       name: insertUser.name || null,
       phoneNumber: insertUser.phoneNumber || null,
       points: 0,
@@ -170,6 +175,7 @@ export class MemStorage implements IStorage {
       updatedAt: new Date()
     };
     this.users.set(id, user);
+    console.log(`User created with ID: ${id}, stored in Map: ${this.users.has(id)}`);
     return user;
   }
 
@@ -337,9 +343,14 @@ export class MemStorage implements IStorage {
   async createWalletTransaction(transaction: InsertWalletTransaction): Promise<WalletTransaction> {
     const id = randomUUID();
     const walletTransaction: WalletTransaction = {
-      ...transaction,
       id,
+      userId: transaction.userId || null,
+      type: transaction.type,
+      amount: transaction.amount,
+      description: transaction.description,
       bookingId: transaction.bookingId || null,
+      balanceBefore: transaction.balanceBefore,
+      balanceAfter: transaction.balanceAfter,
       createdAt: new Date()
     };
     this.walletTransactions.set(id, walletTransaction);
@@ -365,7 +376,7 @@ export class MemStorage implements IStorage {
       id,
       userId,
       achievementId,
-      unlockedAt: new Date()
+      earnedAt: new Date()
     };
     this.userAchievements.set(id, userAchievement);
     return userAchievement;

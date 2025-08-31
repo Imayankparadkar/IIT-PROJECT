@@ -121,9 +121,15 @@ export class SimpleMappls {
           
           console.log('Initializing map with center:', center);
           
-          const map = new (window as any).mappls.Map({
-            container: mapDiv.id,
-            style: `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/style.json`,
+          // Double-check the div exists before creating map
+          const mapElement = document.getElementById(mapDiv.id);
+          if (!mapElement) {
+            console.error('Map div not found in DOM');
+            return;
+          }
+          
+          console.log('Map div confirmed in DOM, creating Map instance...');
+          const map = new (window as any).mappls.Map(mapDiv.id, {
             center: center,
             zoom: origin ? 12 : 15
           });

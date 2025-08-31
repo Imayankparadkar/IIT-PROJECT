@@ -1,0 +1,33 @@
+Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+logger.ts:115  [2025-08-31T08:05:42.796Z]  @firebase/database: FIREBASE FATAL ERROR: Cannot parse Firebase url. Please use https://<YOUR FIREBASE>.firebaseio.com 
+defaultLogHandler @ logger.ts:115
+firebase.ts:28  Realtime Database not initialized: Error: FIREBASE FATAL ERROR: Cannot parse Firebase url. Please use https://<YOUR FIREBASE>.firebaseio.com 
+    at fatal (util.ts:150:9)
+    at parseRepoInfo (parser.ts:79:5)
+    at repoManagerDatabaseFromApp (Database.ts:139:19)
+    at Component.instanceFactory (register.ts:39:16)
+    at Provider.getOrInitializeService (provider.ts:318:33)
+    at Provider.getImmediate (provider.ts:115:21)
+    at getDatabase (Database.ts:328:44)
+    at firebase.ts:26:16
+(anonymous) @ firebase.ts:28
+3dialog.tsx:542  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ dialog.tsx:542
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+api/users/nkrP5wM0a7b6OLzgKxbntbT9oRc2:1   Failed to load resource: the server responded with a status of 404 (Not Found)
+dialog.tsx:542  Warning: Missing `Description` or `aria-describedby={undefined}` for {DialogContent}.
+(anonymous) @ dialog.tsx:542
+mappls-simple.ts:43 Loading Mappls SDK with API key...
+mappls-simple.ts:85 Mappls SDK script added to page
+mappls-simple.ts:51 Mappls SDK script loaded from server
+mappls-simple.ts:55 Mappls SDK is available
+mappls-simple.ts:114 Creating Mappls map instance...
+mappls-simple.ts:122 Initializing map with center: Array(2)
+map_sdk?v=3.0&layer=vector:1  Error:Map conatainer not defined!!
+_4 @ map_sdk?v=3.0&layer=vector:1
+mappls-simple.ts:131 Map instance created successfully
+mappls-simple.ts:221  Error creating map instance: TypeError: map.on is not a function
+    at mappls-simple.ts:134:15
