@@ -40,13 +40,13 @@ export class SimpleMappls {
           return;
         }
 
-        // Load the SDK
-        const script = document.createElement('script');
-        script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector`;
-        script.async = true;
-
-        script.onload = () => {
-          console.log('Mappls SDK loaded successfully');
+        console.log('Loading Mappls SDK with API key...');
+        
+        // Load the SDK with proper callback
+        const callbackName = 'mapplsCallback_' + Date.now();
+        (window as any)[callbackName] = () => {
+          console.log('Mappls SDK callback executed');
+          delete (window as any)[callbackName];
           try {
             this.createInteractiveMap(container, destination, origin);
             resolve();
@@ -56,17 +56,32 @@ export class SimpleMappls {
           }
         };
 
-        script.onerror = () => {
-          console.error('Failed to load Mappls SDK');
-          reject(new Error('SDK load failed'));
+        const script = document.createElement('script');
+        script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector&callback=${callbackName}`;
+        script.async = true;
+        script.defer = true;
+
+        script.onload = () => {
+          console.log('Mappls SDK script loaded from server');
         };
 
-        // Timeout after 10 seconds
+        script.onerror = () => {
+          console.error('Failed to load Mappls SDK script');
+          delete (window as any)[callbackName];
+          reject(new Error('SDK script load failed'));
+        };
+
+        // Timeout after 15 seconds
         setTimeout(() => {
-          reject(new Error('SDK load timeout'));
-        }, 10000);
+          if ((window as any)[callbackName]) {
+            console.error('Mappls SDK loading timeout');
+            delete (window as any)[callbackName];
+            reject(new Error('SDK load timeout'));
+          }
+        }, 15000);
 
         document.head.appendChild(script);
+        console.log('Mappls SDK script added to page');
       } catch (error) {
         reject(error);
       }
@@ -76,7 +91,8 @@ export class SimpleMappls {
   // Create interactive map using Mappls SDK
   private createInteractiveMap(container: HTMLElement, destination: Location, origin?: Location): void {
     try {
-      // Create map container div
+      // Clear container and create map div
+      container.innerHTML = '';
       const mapDiv = document.createElement('div');
       mapDiv.style.width = '100%';
       mapDiv.style.height = '100%';
@@ -84,35 +100,147 @@ export class SimpleMappls {
       mapDiv.id = `map_${Date.now()}`;
       container.appendChild(mapDiv);
 
+      console.log('Creating Mappls map instance...');
+
       // Initialize the map
       const center = origin ? [(origin.lng + destination.lng) / 2, (origin.lat + destination.lat) / 2] : [destination.lng, destination.lat];
       const map = new (window as any).mappls.Map(mapDiv.id, {
         center: center,
-        zoom: origin ? 12 : 15
+        zoom: origin ? 12 : 15,
+        hash: false
       });
 
-      // Add destination marker
-      new (window as any).mappls.Marker({
-        color: '#ef4444'
-      }).setLngLat([destination.lng, destination.lat]).addTo(map);
+      console.log('Map instance created, adding markers...');
 
-      // Add origin marker if available
-      if (origin) {
-        new (window as any).mappls.Marker({
-          color: '#22c55e'
-        }).setLngLat([origin.lng, origin.lat]).addTo(map);
+      // Wait for map to be ready
+      map.on('load', () => {
+        console.log('Map loaded, adding markers and route...');
 
-        // Fit bounds to show both points
-        const bounds = new (window as any).mappls.LngLatBounds();
-        bounds.extend([origin.lng, origin.lat]);
-        bounds.extend([destination.lng, destination.lat]);
-        map.fitBounds(bounds, { padding: 50 });
-      }
+        // Add destination marker with popup
+        const destinationMarker = new (window as any).mappls.Marker({
+          color: '#ef4444'
+        }).setLngLat([destination.lng, destination.lat]).addTo(map);
 
-      console.log('Interactive map created successfully');
+        // Add popup to destination marker
+        const destinationPopup = new (window as any).mappls.Popup({ offset: 25 })
+          .setHTML(`<div><strong>🎯 Destination</strong><br/>${destination.address || 'Parking Location'}</div>`);
+        destinationMarker.setPopup(destinationPopup);
+
+        // Add origin marker if available
+        if (origin) {
+          const originMarker = new (window as any).mappls.Marker({
+            color: '#22c55e'
+          }).setLngLat([origin.lng, origin.lat]).addTo(map);
+
+          // Add popup to origin marker
+          const originPopup = new (window as any).mappls.Popup({ offset: 25 })
+            .setHTML(`<div><strong>📍 Your Location</strong><br/>${origin.address || 'Current Position'}</div>`);
+          originMarker.setPopup(originPopup);
+
+          // Try to add route if both points are available
+          this.addRouteToMap(map, origin, destination);
+
+          // Fit bounds to show both points
+          const bounds = new (window as any).mappls.LngLatBounds();
+          bounds.extend([origin.lng, origin.lat]);
+          bounds.extend([destination.lng, destination.lat]);
+          map.fitBounds(bounds, { padding: 50 });
+        }
+
+        console.log('Interactive map setup completed successfully');
+      });
+
+      map.on('error', (e: any) => {
+        console.error('Map error:', e);
+      });
+
     } catch (error) {
       console.error('Error creating interactive map:', error);
       throw error;
+    }
+  }
+
+  // Add route to map if possible
+  private addRouteToMap(map: any, origin: Location, destination: Location): void {
+    try {
+      // Try to get route using Mappls Directions API
+      fetch(`https://apis.mappls.com/advancedmaps/v1/${this.apiKey}/route_adv/driving/${origin.lng},${origin.lat};${destination.lng},${destination.lat}?geometries=geojson&overview=full`)
+        .then(response => response.json())
+        .then(data => {
+          if (data.routes && data.routes.length > 0) {
+            const route = data.routes[0];
+            
+            // Add route source
+            map.addSource('route', {
+              'type': 'geojson',
+              'data': {
+                'type': 'Feature',
+                'properties': {},
+                'geometry': route.geometry
+              }
+            });
+
+            // Add route layer
+            map.addLayer({
+              'id': 'route',
+              'type': 'line',
+              'source': 'route',
+              'layout': {
+                'line-join': 'round',
+                'line-cap': 'round'
+              },
+              'paint': {
+                'line-color': '#3b82f6',
+                'line-width': 4,
+                'line-opacity': 0.8
+              }
+            });
+
+            console.log('Route added to map successfully');
+          }
+        })
+        .catch(error => {
+          console.log('Could not load route, showing straight line');
+          // Fallback: show a simple line
+          this.addSimpleLineToMap(map, origin, destination);
+        });
+    } catch (error) {
+      console.error('Error adding route:', error);
+    }
+  }
+
+  // Add simple line between points as fallback
+  private addSimpleLineToMap(map: any, origin: Location, destination: Location): void {
+    try {
+      map.addSource('simple-route', {
+        'type': 'geojson',
+        'data': {
+          'type': 'Feature',
+          'properties': {},
+          'geometry': {
+            'type': 'LineString',
+            'coordinates': [[origin.lng, origin.lat], [destination.lng, destination.lat]]
+          }
+        }
+      });
+
+      map.addLayer({
+        'id': 'simple-route',
+        'type': 'line',
+        'source': 'simple-route',
+        'layout': {
+          'line-join': 'round',
+          'line-cap': 'round'
+        },
+        'paint': {
+          'line-color': '#6b7280',
+          'line-width': 2,
+          'line-dasharray': [2, 2],
+          'line-opacity': 0.6
+        }
+      });
+    } catch (error) {
+      console.error('Error adding simple line:', error);
     }
   }
 
