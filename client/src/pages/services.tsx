@@ -5,6 +5,9 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import RealTimeParkingBooking from '@/components/RealTimeParkingBooking';
 import ChallanChecker from '@/components/ChallanChecker';
+import ValetService from '@/components/ValetService';
+import FASTagServices from '@/components/FASTagServices';
+import VehicleMaintenance from '@/components/VehicleMaintenance';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import { 
@@ -185,76 +188,15 @@ export default function ServicesPage() {
                 </TabsContent>
 
                 <TabsContent value="valet" className="mt-6">
-                  <div className="text-center py-12">
-                    <Shield className="h-16 w-16 text-purple-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Premium Valet Service</h3>
-                    <p className="text-gray-600 mb-6">Professional valet parking and car care services</p>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 max-w-2xl mx-auto mb-6">
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <Star className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
-                          <h4 className="font-semibold">Professional Staff</h4>
-                          <p className="text-sm text-gray-600">Trained and certified valet professionals</p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <Shield className="h-8 w-8 text-blue-500 mx-auto mb-2" />
-                          <h4 className="font-semibold">Secure Parking</h4>
-                          <p className="text-sm text-gray-600">CCTV monitored secure parking areas</p>
-                        </CardContent>
-                      </Card>
-                      <Card>
-                        <CardContent className="p-4 text-center">
-                          <Wrench className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                          <h4 className="font-semibold">Car Care</h4>
-                          <p className="text-sm text-gray-600">Basic car care and maintenance services</p>
-                        </CardContent>
-                      </Card>
-                    </div>
-                    <Button>
-                      <Phone className="h-4 w-4 mr-2" />
-                      Book Valet Service
-                    </Button>
-                  </div>
+                  <ValetService />
                 </TabsContent>
 
                 <TabsContent value="fastag" className="mt-6">
-                  <div className="text-center py-12">
-                    <CreditCard className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">FASTag Services</h3>
-                    <p className="text-gray-600 mb-6">Manage your FASTag account and recharge services</p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-lg mx-auto mb-6">
-                      <Button variant="outline" className="h-20 flex flex-col gap-2">
-                        <Wallet className="h-6 w-6" />
-                        <span>Check Balance</span>
-                      </Button>
-                      <Button variant="outline" className="h-20 flex flex-col gap-2">
-                        <CreditCard className="h-6 w-6" />
-                        <span>Recharge Now</span>
-                      </Button>
-                      <Button variant="outline" className="h-20 flex flex-col gap-2">
-                        <FileText className="h-6 w-6" />
-                        <span>Transaction History</span>
-                      </Button>
-                      <Button variant="outline" className="h-20 flex flex-col gap-2">
-                        <Clock className="h-6 w-6" />
-                        <span>Auto Recharge</span>
-                      </Button>
-                    </div>
-                  </div>
+                  <FASTagServices />
                 </TabsContent>
 
                 <TabsContent value="maintenance" className="mt-6">
-                  <div className="text-center py-12">
-                    <Wrench className="h-16 w-16 text-gray-500 mx-auto mb-4" />
-                    <h3 className="text-xl font-semibold mb-2">Vehicle Maintenance</h3>
-                    <p className="text-gray-600 mb-6">Schedule and track your vehicle maintenance services</p>
-                    <Button>
-                      <Calendar className="h-4 w-4 mr-2" />
-                      Schedule Service
-                    </Button>
-                  </div>
+                  <VehicleMaintenance />
                 </TabsContent>
               </Tabs>
             </CardHeader>
