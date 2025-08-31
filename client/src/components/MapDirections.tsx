@@ -35,6 +35,7 @@ export default function MapDirections({
   const mapContainer = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [locationStatus, setLocationStatus] = useState<string>('Initializing...');
   const [userLocation, setUserLocation] = useState<Location | null>(null);
   const [routeInfo, setRouteInfo] = useState<{
     distance: string;
@@ -58,11 +59,13 @@ export default function MapDirections({
     if (!mapContainer.current) return;
 
     setIsLoading(true);
+    setLocationStatus('Getting your location...');
 
     try {
-      // Get user's current location
+      // Get user's current location with faster timeout
       const userLoc = await simpleMappls.getCurrentLocation();
       setUserLocation(userLoc);
+      setLocationStatus('Location found!');
 
       console.log('User location:', userLoc);
       console.log('Destination:', destination);
@@ -84,6 +87,7 @@ export default function MapDirections({
 
     } catch (error) {
       console.error('Error initializing simple map:', error);
+      setLocationStatus('Using default location');
       // Create fallback static map
       if (mapContainer.current) {
         mapContainer.current.innerHTML = `
@@ -92,12 +96,13 @@ export default function MapDirections({
               <div class="text-blue-600 mb-2">📍</div>
               <p class="text-blue-800 font-medium">${destinationName}</p>
               <p class="text-blue-600 text-sm">${destination.address || 'View location in external app'}</p>
+              <div class="mt-3 text-xs text-gray-500">Tap navigation buttons below for directions</div>
             </div>
           </div>
         `;
         setRouteInfo({
-          distance: 'Click external links',
-          duration: 'for navigation'
+          distance: 'Use external navigation',
+          duration: 'for accurate directions'
         });
       }
     } finally {
@@ -106,13 +111,24 @@ export default function MapDirections({
   };
 
   const openInMappls = () => {
-    const mapplsUrl = simpleMappls.getDirectionsUrl(destination);
+    const mapplsUrl = simpleMappls.getDirectionsUrl(destination, userLocation || undefined);
     window.open(mapplsUrl, '_blank');
   };
 
   const openInGoogleMaps = () => {
-    const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination);
+    const googleMapsUrl = simpleMappls.getGoogleMapsUrl(destination, userLocation || undefined);
     window.open(googleMapsUrl, '_blank');
+  };
+
+  // Quick navigation without waiting for location
+  const openQuickNavigation = (type: 'mappls' | 'google') => {
+    if (type === 'mappls') {
+      const url = `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
+      window.open(url, '_blank');
+    } else {
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
+      window.open(url, '_blank');
+    }
   };
 
   return (
@@ -165,7 +181,23 @@ export default function MapDirections({
               <div className="absolute inset-0 flex items-center justify-center bg-gray-100 rounded-lg">
                 <div className="flex flex-col items-center gap-3">
                   <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-                  <p className="text-sm text-gray-600">Getting your location...</p>
+                  <p className="text-sm text-gray-600">{locationStatus}</p>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => {
+                      setIsLoading(false);
+                      if (mapContainer.current) {
+                        simpleMappls.createEmbeddedMap(
+                          mapContainer.current.id,
+                          destination
+                        );
+                      }
+                    }}
+                    className="mt-2"
+                  >
+                    Skip & Show Map
+                  </Button>
                 </div>
               </div>
             )}
@@ -188,29 +220,55 @@ export default function MapDirections({
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            <Button
-              onClick={openInMappls}
-              className="flex items-center gap-2"
-              variant="default"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Open in Mappls
-            </Button>
+          <div className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              <Button
+                onClick={openInMappls}
+                className="flex items-center gap-2"
+                variant="default"
+                size="lg"
+              >
+                <Navigation className="h-4 w-4" />
+                Navigate with Mappls
+              </Button>
+              
+              <Button
+                onClick={openInGoogleMaps}
+                className="flex items-center gap-2"
+                variant="default"
+                size="lg"
+              >
+                <Navigation className="h-4 w-4" />
+                Navigate with Google Maps
+              </Button>
+            </div>
             
-            <Button
-              onClick={openInGoogleMaps}
-              className="flex items-center gap-2"
-              variant="outline"
-            >
-              <ExternalLink className="h-4 w-4" />
-              Google Maps
-            </Button>
-
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                onClick={() => openQuickNavigation('mappls')}
+                className="flex items-center gap-2"
+                variant="outline"
+                size="sm"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Quick Mappls
+              </Button>
+              
+              <Button
+                onClick={() => openQuickNavigation('google')}
+                className="flex items-center gap-2"
+                variant="outline" 
+                size="sm"
+              >
+                <ExternalLink className="h-3 w-3" />
+                Quick Google
+              </Button>
+            </div>
+            
             <Button
               onClick={onClose}
               variant="secondary"
-              className="md:col-span-1"
+              className="w-full"
             >
               Close
             </Button>

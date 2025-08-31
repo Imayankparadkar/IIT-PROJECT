@@ -60,40 +60,65 @@ export class SimpleMappls {
     return container;
   }
 
-  // Get directions URL for external navigation
-  getDirectionsUrl(destination: Location): string {
+  // Get directions URL for external navigation with origin if available
+  getDirectionsUrl(destination: Location, origin?: Location): string {
+    if (origin && origin.lat !== 22.7196) { // Don't use default Indore location as origin
+      return `https://maps.mapmyindia.com/directions?origin=${origin.lat},${origin.lng}&destination=${destination.lat},${destination.lng}&mode=driving`;
+    }
     return `https://maps.mapmyindia.com/directions?destination=${destination.lat},${destination.lng}`;
   }
 
-  // Get Google Maps fallback URL
-  getGoogleMapsUrl(destination: Location): string {
+  // Get Google Maps fallback URL with origin if available
+  getGoogleMapsUrl(destination: Location, origin?: Location): string {
+    if (origin && origin.lat !== 22.7196) { // Don't use default Indore location as origin
+      return `https://www.google.com/maps/dir/${origin.lat},${origin.lng}/${destination.lat},${destination.lng}`;
+    }
     return `https://www.google.com/maps/dir/?api=1&destination=${destination.lat},${destination.lng}&travelmode=driving`;
   }
 
-  // Get current location
+  // Get current location with faster timeout and better error handling
   async getCurrentLocation(): Promise<Location> {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
       if (!navigator.geolocation) {
-        reject(new Error('Geolocation is not supported'));
+        console.log('Geolocation not supported, using fallback location');
+        resolve({
+          lat: 22.7196,
+          lng: 75.8577,
+          address: "Indore, Madhya Pradesh (Default)"
+        });
         return;
       }
 
+      // Set a faster timeout to prevent hanging
+      const timeoutId = setTimeout(() => {
+        console.log('Geolocation timeout, using fallback location');
+        resolve({
+          lat: 22.7196,
+          lng: 75.8577,
+          address: "Indore, Madhya Pradesh (Timeout)"
+        });
+      }, 3000); // Reduced timeout to 3 seconds
+
       navigator.geolocation.getCurrentPosition(
         (position) => {
+          clearTimeout(timeoutId);
+          console.log('Got user location:', position.coords);
           resolve({
             lat: position.coords.latitude,
-            lng: position.coords.longitude
+            lng: position.coords.longitude,
+            address: "Your current location"
           });
         },
         (error) => {
-          // Fallback to Indore coordinates
+          clearTimeout(timeoutId);
+          console.log('Geolocation error:', error.message, 'using fallback location');
           resolve({
             lat: 22.7196,
             lng: 75.8577,
-            address: "Indore, Madhya Pradesh"
+            address: "Indore, Madhya Pradesh (Error)"
           });
         },
-        { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+        { enableHighAccuracy: false, timeout: 2500, maximumAge: 60000 }
       );
     });
   }
