@@ -1,8 +1,6 @@
 import { Location } from './mappls';
 
 const MAPPLS_API_KEY = import.meta.env.VITE_MAPPLS_API_KEY;
-const MAPPLS_CLIENT_ID = import.meta.env.VITE_MAPPLS_CLIENT_ID;
-const MAPPLS_CLIENT_SECRET = import.meta.env.VITE_MAPPLS_CLIENT_SECRET;
 
 export class SimpleMappls {
   private apiKey: string;
@@ -11,7 +9,7 @@ export class SimpleMappls {
     this.apiKey = MAPPLS_API_KEY;
   }
 
-  // Initialize a simple embedded map using iframe approach
+  // Initialize a reliable map using Mappls SDK or fallback
   createEmbeddedMap(containerId: string, destination: Location, origin?: Location): HTMLElement {
     const container = document.getElementById(containerId);
     if (!container) {
@@ -21,67 +19,101 @@ export class SimpleMappls {
     // Clear container
     container.innerHTML = '';
 
-    // Create iframe for embedded map
-    const iframe = document.createElement('iframe');
-    iframe.style.width = '100%';
-    iframe.style.height = '100%';
-    iframe.style.border = 'none';
-    iframe.style.borderRadius = '8px';
-
-    // Build URL for embedded map with directions - try multiple approaches
-    let mapUrl;
-    
-    if (origin) {
-      // Try Mappls embed with route
-      mapUrl = `https://maps.mappls.com/embed-api/route?key=${this.apiKey}&start=${origin.lat},${origin.lng}&end=${destination.lat},${destination.lng}&vehicleType=FourWheeler`;
-    } else {
-      // Just show the destination with Mappls embed
-      mapUrl = `https://maps.mappls.com/embed-api/map?key=${this.apiKey}&centre=${destination.lat},${destination.lng}&zoom=15&markers=${destination.lat},${destination.lng}`;
-    }
-
-    // Try to load the iframe with multiple fallbacks
-    let attemptCount = 0;
-    const maxAttempts = 3;
-    const mapUrls = [
-      mapUrl,
-      // Fallback 1: Basic Mappls embed
-      `https://maps.mapmyindia.com/embed?q=${destination.lat},${destination.lng}&zoom=15`,
-      // Fallback 2: OpenStreetMap embed as last resort
-      `https://www.openstreetmap.org/export/embed.html?bbox=${destination.lng-0.01},${destination.lat-0.01},${destination.lng+0.01},${destination.lat+0.01}&marker=${destination.lat},${destination.lng}`
-    ];
-
-    const tryLoadMap = (urlIndex: number) => {
-      if (urlIndex >= mapUrls.length) {
-        console.log('All map URLs failed, showing enhanced fallback');
+    // Try to load Mappls SDK first
+    this.loadMapplsSDKAndCreateMap(container, destination, origin)
+      .catch(() => {
+        console.log('Mappls SDK failed, using enhanced fallback map');
         this.createEnhancedFallbackMap(container, destination, origin);
-        return;
-      }
-
-      iframe.src = mapUrls[urlIndex];
-      console.log(`Trying map URL ${urlIndex + 1}:`, mapUrls[urlIndex]);
-
-      iframe.onload = () => {
-        console.log(`Map iframe loaded successfully with URL ${urlIndex + 1}`);
-      };
-
-      iframe.onerror = () => {
-        console.error(`Map iframe failed to load with URL ${urlIndex + 1}, trying next...`);
-        tryLoadMap(urlIndex + 1);
-      };
-
-      // Set a timeout for each attempt
-      setTimeout(() => {
-        if (iframe.contentDocument === null || iframe.contentDocument.readyState !== 'complete') {
-          console.log(`Map iframe timeout for URL ${urlIndex + 1}, trying next...`);
-          tryLoadMap(urlIndex + 1);
-        }
-      }, 3000);
-    };
-
-    container.appendChild(iframe);
-    tryLoadMap(0);
+      });
 
     return container;
+  }
+
+  // Load Mappls SDK and create interactive map
+  private async loadMapplsSDKAndCreateMap(container: HTMLElement, destination: Location, origin?: Location): Promise<void> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        // Check if SDK is already loaded
+        if ((window as any).mappls) {
+          this.createInteractiveMap(container, destination, origin);
+          resolve();
+          return;
+        }
+
+        // Load the SDK
+        const script = document.createElement('script');
+        script.src = `https://apis.mappls.com/advancedmaps/api/${this.apiKey}/map_sdk?v=3.0&layer=vector`;
+        script.async = true;
+
+        script.onload = () => {
+          console.log('Mappls SDK loaded successfully');
+          try {
+            this.createInteractiveMap(container, destination, origin);
+            resolve();
+          } catch (error) {
+            console.error('Error creating interactive map:', error);
+            reject(error);
+          }
+        };
+
+        script.onerror = () => {
+          console.error('Failed to load Mappls SDK');
+          reject(new Error('SDK load failed'));
+        };
+
+        // Timeout after 10 seconds
+        setTimeout(() => {
+          reject(new Error('SDK load timeout'));
+        }, 10000);
+
+        document.head.appendChild(script);
+      } catch (error) {
+        reject(error);
+      }
+    });
+  }
+
+  // Create interactive map using Mappls SDK
+  private createInteractiveMap(container: HTMLElement, destination: Location, origin?: Location): void {
+    try {
+      // Create map container div
+      const mapDiv = document.createElement('div');
+      mapDiv.style.width = '100%';
+      mapDiv.style.height = '100%';
+      mapDiv.style.borderRadius = '8px';
+      mapDiv.id = `map_${Date.now()}`;
+      container.appendChild(mapDiv);
+
+      // Initialize the map
+      const center = origin ? [(origin.lng + destination.lng) / 2, (origin.lat + destination.lat) / 2] : [destination.lng, destination.lat];
+      const map = new (window as any).mappls.Map(mapDiv.id, {
+        center: center,
+        zoom: origin ? 12 : 15
+      });
+
+      // Add destination marker
+      new (window as any).mappls.Marker({
+        color: '#ef4444'
+      }).setLngLat([destination.lng, destination.lat]).addTo(map);
+
+      // Add origin marker if available
+      if (origin) {
+        new (window as any).mappls.Marker({
+          color: '#22c55e'
+        }).setLngLat([origin.lng, origin.lat]).addTo(map);
+
+        // Fit bounds to show both points
+        const bounds = new (window as any).mappls.LngLatBounds();
+        bounds.extend([origin.lng, origin.lat]);
+        bounds.extend([destination.lng, destination.lat]);
+        map.fitBounds(bounds, { padding: 50 });
+      }
+
+      console.log('Interactive map created successfully');
+    } catch (error) {
+      console.error('Error creating interactive map:', error);
+      throw error;
+    }
   }
 
   // Get directions URL for external navigation with origin if available
@@ -174,79 +206,35 @@ export class SimpleMappls {
     return value * Math.PI / 180;
   }
 
-  // Create a fallback visual map when iframe fails
-  private createFallbackMap(container: HTMLElement, destination: Location, origin?: Location) {
-    const routeInfo = origin ? this.calculateDistance(origin, destination) : { distance: 'N/A', duration: 'N/A' };
-    
-    container.innerHTML = `
-      <div class="w-full h-full bg-gradient-to-br from-blue-50 to-green-50 border border-blue-200 rounded-lg flex flex-col items-center justify-center p-6">
-        <div class="text-center mb-4">
-          <div class="text-4xl mb-2">🗺️</div>
-          <h3 class="text-lg font-semibold text-blue-800 mb-2">${destination.address || 'Destination'}</h3>
-          <div class="text-sm text-blue-600 space-y-1">
-            <div>📍 Lat: ${destination.lat.toFixed(4)}, Lng: ${destination.lng.toFixed(4)}</div>
-            ${origin ? `<div>📍 From: ${origin.lat.toFixed(4)}, ${origin.lng.toFixed(4)}</div>` : ''}
-            ${origin ? `<div>📏 Distance: ${routeInfo.distance}</div>` : ''}
-            ${origin ? `<div>⏱️ Est. Time: ${routeInfo.duration}</div>` : ''}
-          </div>
-        </div>
-        <div class="text-center">
-          <p class="text-sm text-gray-600 mb-3">Interactive map unavailable</p>
-          <p class="text-xs text-gray-500">Use external navigation buttons below</p>
-        </div>
-      </div>
-    `;
-  }
-
-  // Create an enhanced fallback with better visual representation
+  // Create enhanced fallback map with better visual representation
   createEnhancedFallbackMap(container: HTMLElement, destination: Location, origin?: Location) {
     const routeInfo = origin ? this.calculateDistance(origin, destination) : { distance: 'N/A', duration: 'N/A' };
     
     container.innerHTML = `
-      <div class="w-full h-full bg-gradient-to-br from-blue-50 via-green-50 to-yellow-50 border-2 border-blue-300 rounded-lg overflow-hidden">
-        <div class="bg-blue-600 text-white p-3 text-center">
-          <h3 class="font-semibold text-sm">🧭 Navigation Preview</h3>
-        </div>
-        <div class="p-6 h-full flex flex-col justify-center">
-          <div class="text-center mb-6">
-            <div class="text-5xl mb-3">🎯</div>
-            <h3 class="text-xl font-bold text-blue-800 mb-2">${destination.address || 'Parking Location'}</h3>
-          </div>
-          
-          <div class="space-y-3 mb-6">
-            <div class="bg-white rounded-lg p-3 shadow-sm border border-blue-100">
-              <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700">📍 Destination</span>
-                <span class="text-sm text-blue-600">${destination.lat.toFixed(4)}, ${destination.lng.toFixed(4)}</span>
-              </div>
+      <div class="w-full h-full bg-gradient-to-br from-blue-50 via-indigo-50 to-purple-50 border-2 border-blue-200 rounded-lg flex flex-col items-center justify-center p-6 shadow-lg">
+        <div class="text-center mb-6">
+          <div class="text-6xl mb-3 animate-pulse">🗺️</div>
+          <h3 class="text-xl font-bold text-blue-900 mb-3">${destination.address || 'Parking Destination'}</h3>
+          <div class="bg-white rounded-lg p-4 shadow-md text-sm text-gray-700 space-y-2 max-w-sm">
+            <div class="flex items-center justify-between">
+              <span class="font-medium">📍 Location:</span>
+              <span>${destination.lat.toFixed(4)}, ${destination.lng.toFixed(4)}</span>
             </div>
-            
             ${origin ? `
-            <div class="bg-white rounded-lg p-3 shadow-sm border border-green-100">
               <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700">📍 Your Location</span>
-                <span class="text-sm text-green-600">${origin.lat.toFixed(4)}, ${origin.lng.toFixed(4)}</span>
+                <span class="font-medium">📏 Distance:</span>
+                <span class="text-blue-600 font-semibold">${routeInfo.distance}</span>
               </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-blue-100 to-green-100 rounded-lg p-3 border border-blue-200">
               <div class="flex items-center justify-between">
-                <span class="text-sm font-medium text-gray-700">📏 Distance</span>
-                <span class="text-sm font-semibold text-blue-700">${routeInfo.distance}</span>
+                <span class="font-medium">⏱️ Est. Time:</span>
+                <span class="text-green-600 font-semibold">${routeInfo.duration}</span>
               </div>
-              <div class="flex items-center justify-between mt-1">
-                <span class="text-sm font-medium text-gray-700">⏱️ Est. Time</span>
-                <span class="text-sm font-semibold text-green-700">${routeInfo.duration}</span>
-              </div>
-            </div>
             ` : ''}
           </div>
-          
-          <div class="text-center bg-yellow-50 rounded-lg p-4 border border-yellow-200">
-            <div class="text-lg mb-2">🗺️</div>
-            <p class="text-sm text-yellow-800 font-medium mb-1">Interactive Map Loading Failed</p>
-            <p class="text-xs text-yellow-700">Use the navigation buttons below to get directions</p>
-          </div>
+        </div>
+        <div class="text-center bg-yellow-50 border border-yellow-200 rounded-lg p-3">
+          <p class="text-sm text-yellow-800 font-medium mb-2">📱 Interactive Map Loading...</p>
+          <p class="text-xs text-yellow-600">Use navigation buttons below for directions</p>
         </div>
       </div>
     `;
