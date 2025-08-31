@@ -133,56 +133,85 @@ export class SimpleMappls {
 
           console.log('Map instance created successfully');
 
-          // Wait for map to be fully ready before adding markers
-          const addMarkersWhenReady = () => {
+          // Wait for map to be loaded before adding markers
+          map.on('load', () => {
             try {
-              // Check if map is ready by testing a basic method
-              if (map && map.getCenter) {
-                console.log('Map is ready, adding markers...');
+              console.log('Map loaded event fired, adding markers...');
 
-                // Add destination marker
-                const destinationMarker = new (window as any).mappls.Marker({
-                  color: 'red'
-                }).setLngLat([destination.lng, destination.lat]);
-                
-                destinationMarker.addTo(map);
-                console.log('Destination marker added');
+              // Add destination marker using proper Mappls API
+              const destinationEl = document.createElement('div');
+              destinationEl.className = 'destination-marker';
+              destinationEl.style.width = '20px';
+              destinationEl.style.height = '20px';
+              destinationEl.style.borderRadius = '50%';
+              destinationEl.style.backgroundColor = '#ef4444';
+              destinationEl.style.border = '2px solid white';
+              destinationEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
 
-                // Add origin marker if available
-                if (origin) {
-                  const originMarker = new (window as any).mappls.Marker({
-                    color: 'green'
-                  }).setLngLat([origin.lng, origin.lat]);
-                  
-                  originMarker.addTo(map);
-                  console.log('Origin marker added');
+              const destinationMarker = new (window as any).mappls.Marker(destinationEl)
+                .setLngLat([destination.lng, destination.lat])
+                .addTo(map);
 
-                  // Fit bounds to show both points
-                  try {
-                    const bounds = new (window as any).mappls.LngLatBounds();
-                    bounds.extend([origin.lng, origin.lat]);
-                    bounds.extend([destination.lng, destination.lat]);
-                    map.fitBounds(bounds, { padding: 50 });
-                    console.log('Map bounds set successfully');
-                  } catch (boundsError) {
-                    console.log('Could not set bounds, using default zoom');
-                  }
+              console.log('Destination marker added successfully');
+
+              // Add origin marker if available
+              if (origin) {
+                const originEl = document.createElement('div');
+                originEl.className = 'origin-marker';
+                originEl.style.width = '20px';
+                originEl.style.height = '20px';
+                originEl.style.borderRadius = '50%';
+                originEl.style.backgroundColor = '#22c55e';
+                originEl.style.border = '2px solid white';
+                originEl.style.boxShadow = '0 2px 4px rgba(0,0,0,0.3)';
+
+                const originMarker = new (window as any).mappls.Marker(originEl)
+                  .setLngLat([origin.lng, origin.lat])
+                  .addTo(map);
+
+                console.log('Origin marker added successfully');
+
+                // Fit bounds to show both points
+                try {
+                  const bounds = new (window as any).mappls.LngLatBounds();
+                  bounds.extend([origin.lng, origin.lat]);
+                  bounds.extend([destination.lng, destination.lat]);
+                  map.fitBounds(bounds, { padding: 50 });
+                  console.log('Map bounds set successfully');
+                } catch (boundsError) {
+                  console.log('Could not set bounds, using default zoom');
                 }
-
-                console.log('Interactive map setup completed successfully');
-              } else {
-                console.log('Map not ready yet, waiting...');
-                setTimeout(addMarkersWhenReady, 200);
               }
+
+              console.log('Interactive map setup completed successfully');
             } catch (markerError) {
               console.error('Error adding markers:', markerError);
-              // Try again after a short delay
-              setTimeout(addMarkersWhenReady, 500);
             }
-          };
+          });
 
-          // Start checking for map readiness
-          setTimeout(addMarkersWhenReady, 1000);
+          // Also add a timeout as backup
+          setTimeout(() => {
+            try {
+              if (map && map.getCenter && !document.querySelector('.destination-marker')) {
+                console.log('Backup marker addition triggered...');
+                
+                // Simple fallback markers without custom styling
+                const simpleDestinationMarker = new (window as any).mappls.Marker()
+                  .setLngLat([destination.lng, destination.lat])
+                  .addTo(map);
+
+                if (origin) {
+                  const simpleOriginMarker = new (window as any).mappls.Marker()
+                    .setLngLat([origin.lng, origin.lat])
+                    .addTo(map);
+                }
+                
+                console.log('Backup markers added');
+              }
+            } catch (error) {
+              console.log('Backup marker addition failed:', error);
+            }
+          }, 3000);
 
           // Handle map errors
           if (map.on) {
